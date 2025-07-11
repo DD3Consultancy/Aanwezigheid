@@ -1,54 +1,69 @@
-// class-detail.js
-
-import { supabase } from './supabaseClient.js';  // Adjust if you use different import method
+import { supabase } from './supabaseClient.js'; // Zorg dat dit correct is ingeladen
 
 async function loadAttendingStudents(classId) {
   try {
-    console.log("Loading attending students for class ID:", classId);
+    console.log("🔍 Laden van studenten voor klas-ID:", classId);
 
-    const { data: students, error } = await supabase
+    const { data: studentLinks, error } = await supabase
       .from("student_classes")
       .select("students (id, firstname, lastname, email)")
       .eq("class_id", classId);
 
     if (error) {
-      console.error("Error fetching attending students:", error);
-      alert("Error loading students: " + error.message);
+      console.error("❌ Fout bij ophalen studenten:", error);
+      alert("Fout bij laden van studenten: " + error.message);
       return;
     }
 
-    console.log("Fetched students data:", students);
+    console.log("✅ Studenten opgehaald via student_classes:", studentLinks);
 
     const tbody = document.querySelector("#students-table tbody");
-    tbody.innerHTML = "";
-
-    if (!students || students.length === 0) {
-      tbody.innerHTML = "<tr><td colspan='4'>No students found for this class.</td></tr>";
+    if (!tbody) {
+      console.warn("⚠️ Geen <tbody> gevonden in de HTML met id='students-table'");
       return;
     }
 
-    students.forEach(student => {
+    tbody.innerHTML = "";
+
+    if (!studentLinks || studentLinks.length === 0) {
+      console.warn("ℹ️ Geen studenten gevonden voor deze klas.");
+      tbody.innerHTML = "<tr><td colspan='4'>Geen studenten gekoppeld aan deze klas.</td></tr>";
+      return;
+    }
+
+    studentLinks.forEach(link => {
+      const student = link.students;
+      if (!student) {
+        console.warn("⚠️ Lege student-link object:", link);
+        return;
+      }
+
+      console.log("👤 Student toegevoegd:", student);
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${student.id}</td>
         <td>${student.firstname}</td>
         <td>${student.lastname}</td>
-        <td>${student.email}</td>
+        <td>${student.email || ''}</td>
       `;
       tbody.appendChild(tr);
     });
+
   } catch (err) {
-    console.error("Unexpected error loading attending students:", err);
-    alert("Unexpected error: " + err.message);
+    console.error("🚨 Onverwachte fout:", err);
+    alert("Onverwachte fout: " + err.message);
   }
 }
 
-// Example usage: get classId from URL or selection
+// 📌 URL-parameter ophalen
 const urlParams = new URLSearchParams(window.location.search);
 const classId = urlParams.get("class_id");
 
+console.log("🌐 URL class_id parameter:", classId);
+
 if (!classId) {
-  alert("No class selected. Please select a class first.");
+  alert("Geen klas geselecteerd. Selecteer eerst een klas.");
 } else {
   loadAttendingStudents(classId);
 }
