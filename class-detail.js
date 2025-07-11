@@ -51,8 +51,8 @@ async function loadAttendingStudents(classId) {
     }
 
     // Tel mannen en vrouwen
-    const aantalMannen = studentLinks.filter(s => s.students.geslacht === "man").length;
-    const aantalVrouwen = studentLinks.filter(s => s.students.geslacht === "vrouw").length;
+    const aantalMannen = studentLinks.filter(s => s.students.geslacht === "Man").length;
+    const aantalVrouwen = studentLinks.filter(s => s.students.geslacht === "Vrouw").length;
 
     // Toon het aantal mannen en vrouwen
     const genderCountDiv = document.getElementById("gender-count");
