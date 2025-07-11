@@ -50,6 +50,16 @@ async function loadAttendingStudents(classId) {
       return;
     }
 
+    // Tel mannen en vrouwen
+    const aantalMannen = studentLinks.filter(s => s.students.geslacht === "man").length;
+    const aantalVrouwen = studentLinks.filter(s => s.students.geslacht === "vrouw").length;
+
+    // Toon het aantal mannen en vrouwen
+    const genderCountDiv = document.getElementById("gender-count");
+    if (genderCountDiv) {
+      genderCountDiv.textContent = `Mannen: ${aantalMannen} - Vrouwen: ${aantalVrouwen}`;
+    }
+
     const tbody = document.querySelector("#students-table tbody");
     tbody.innerHTML = "";
 
@@ -113,6 +123,7 @@ async function loadAttendingStudents(classId) {
     alert("Onverwachte fout: " + err.message);
   }
 }
+
 
 async function saveAttendance(studentClassId, lessonNumber, aanwezig) {
   const { data: existing, error: fetchError } = await supabase
