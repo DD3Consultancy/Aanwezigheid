@@ -69,11 +69,21 @@
   <h1>Student List</h1>
 
   <form id="student-form">
-    <input type="text" id="firstname" placeholder="First name" required />
-    <input type="text" id="lastname" placeholder="Last name" required />
-    <input type="email" id="email" placeholder="Email (optional)" />
-    <button type="submit">Add Student</button>
-  </form>
+  <input type="text" id="firstname" placeholder="First name" required />
+  <input type="text" id="lastname" placeholder="Last name" required />
+  <input type="email" id="email" placeholder="Email (optional)" />
+  
+  <label for="geslacht">Geslacht</label>
+  <select id="geslacht" required>
+    <option value="" disabled selected>Kies geslacht</option>
+    <option value="man">Man</option>
+    <option value="vrouw">Vrouw</option>
+    <option value="anders">Anders</option>
+  </select>
+
+  <button type="submit">Add Student</button>
+</form>
+
 
   <table id="students-table">
   <thead>
