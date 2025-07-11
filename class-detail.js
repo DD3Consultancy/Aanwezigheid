@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient.js'; // Zorg dat dit correct is ingeladen
+// class-detail.js
 
 async function loadAttendingStudents(classId) {
   try {
