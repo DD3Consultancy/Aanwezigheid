@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -27,12 +27,11 @@
     th {
       background-color: #f4f4f4;
     }
-    a {
-      text-decoration: none;
-      color: inherit;
-      display: block;
-      width: 100%;
-      height: 100%;
+    .group-header {
+      background-color: #e0e0e0;
+      font-weight: bold;
+      text-align: left;
+      padding: 0.5rem;
     }
     button {
       padding: 6px 12px;
@@ -46,32 +45,33 @@
 
   <table id="students-table">
     <thead>
-  <tr>
-    <th>Voornaam</th>
-    <th>Achternaam</th>
-    <th colspan="12">Aanwezigheid per les</th>
-  </tr>
-  <tr>
-    <th></th><th></th>
-    <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th>
-    <th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th>
-  </tr>
-</thead>
+      <tr>
+        <th>Voornaam</th>
+        <th>Achternaam</th>
+        <th>Email</th>
+        <th colspan="12">Aanwezigheid per les</th>
+      </tr>
+      <tr>
+        <th></th><th></th><th></th>
+        <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th>
+        <th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th>
+      </tr>
+    </thead>
     <tbody>
-      <!-- Students will load here -->
+      <!-- Studenten worden hier geladen -->
     </tbody>
   </table>
 
-  <button onclick="window.history.back()">⬅️ Back</button>
+  <button onclick="window.history.back()">⬅️ Terug</button>
 
-<!-- Supabase library -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <!-- Supabase library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
-<!-- Jouw Supabase client (maakt 'supabase' beschikbaar) -->
-<script src="supabaseClient.js"></script>
+  <!-- Supabase client -->
+  <script src="supabaseClient.js"></script>
 
-<!-- De pagina-specifieke logica -->
-<script src="class-detail.js"></script>
+  <!-- Pagina specifieke logica -->
+  <script src="class-detail.js"></script>
 
 </body>
 </html>
