@@ -4,7 +4,32 @@ const classId = urlParams.get("class_id");
 if (!classId) {
   alert("Geen klas geselecteerd. Selecteer eerst een klas.");
 } else {
+  loadClassDetails(classId);        // 🔹 Nieuw toegevoegd
   loadAttendingStudents(classId);
+}
+
+async function loadClassDetails(classId) {
+  const { data: classData, error } = await supabase
+    .from("classes")
+    .select("dance_style, level, day, start_time, end_time")
+    .eq("id", classId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Fout bij ophalen klasdetails:", error);
+    return;
+  }
+
+  if (classData) {
+    const detailsDiv = document.getElementById("class-details");
+    detailsDiv.innerHTML = `
+      <p><strong>Dansstijl:</strong> ${classData.dance_style}</p>
+      <p><strong>Niveau:</strong> ${classData.level}</p>
+      <p><strong>Dag:</strong> ${classData.day}</p>
+      <p><strong>Starttijd:</strong> ${classData.start_time}</p>
+      <p><strong>Eindtijd:</strong> ${classData.end_time}</p>
+    `;
+  }
 }
 
 async function loadAttendingStudents(classId) {
@@ -31,7 +56,6 @@ async function loadAttendingStudents(classId) {
       const student = link.students;
       const studentClassId = link.id;
 
-      // Haal aanwezigheid op
       const { data: aanwezigheid, error: attError } = await supabase
         .from("attendance")
         .select("lesson_number, aanwezig")
