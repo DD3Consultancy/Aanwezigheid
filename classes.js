@@ -1,94 +1,95 @@
-// classes.js
-
-let editingClassId = null; // ⬅️ houdt bij of we aan het bewerken zijn
-
 async function loadClasses() {
   const { data: classes, error } = await supabase
     .from("classes")
     .select("*")
-    .eq("active", true)
     .order("dancestyle")
     .order("level");
 
   if (error) {
-    console.error("Fout bij laden van klassen:", error.message);
+    console.error("Error loading classes:", error.message);
     return;
   }
 
-  const tbody = document.querySelector("#classes-table tbody");
-  tbody.innerHTML = "";
+  const activeClasses = classes.filter(c => c.active);
+  const inactiveClasses = classes.filter(c => !c.active);
 
-  classes.forEach(cls => {
+  const activeTbody = document.querySelector("#active-classes-table tbody");
+  const inactiveTbody = document.querySelector("#inactive-classes-table tbody");
+
+  activeTbody.innerHTML = "";
+  inactiveTbody.innerHTML = "";
+
+  activeClasses.forEach(cls => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${cls.dancestyle}</td>
       <td>${cls.level}</td>
       <td>${cls.day}</td>
-      <td>${cls.start_time?.slice(0,5)}</td>
-      <td>${cls.end_time?.slice(0,5)}</td>
-      <td>
-        <button onclick="editClass('${cls.id}')">✏️</button>
-      </td>
+      <td>${cls.start_time?.slice(0,5) || ''}</td>
+      <td>${cls.end_time?.slice(0,5) || ''}</td>
+      <td><input type="checkbox" checked data-id="${cls.id}" /></td>
     `;
-    tbody.appendChild(tr);
+    activeTbody.appendChild(tr);
+  });
+
+  inactiveClasses.forEach(cls => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${cls.dancestyle}</td>
+      <td>${cls.level}</td>
+      <td>${cls.day}</td>
+      <td>${cls.start_time?.slice(0,5) || ''}</td>
+      <td>${cls.end_time?.slice(0,5) || ''}</td>
+      <td><input type="checkbox" data-id="${cls.id}" /></td>
+    `;
+    inactiveTbody.appendChild(tr);
   });
 }
 
-async function editClass(id) {
-  const { data: cls, error } = await supabase
-    .from("classes")
-    .select("*")
-    .eq("id", id)
-    .maybeSingle();
+// Listen for checkbox changes to toggle active status
+document.body.addEventListener("change", async (e) => {
+  if (e.target.type === "checkbox" && e.target.dataset.id) {
+    const classId = e.target.dataset.id;
+    const newActive = e.target.checked;
 
-  if (error || !cls) {
-    alert("Fout bij laden klas om te bewerken");
-    return;
+    const { error } = await supabase
+      .from("classes")
+      .update({ active: newActive })
+      .eq("id", classId);
+
+    if (error) {
+      alert("Failed to update active status: " + error.message);
+      e.target.checked = !newActive; // revert checkbox on error
+      return;
+    }
+
+    loadClasses();
   }
+});
 
-  document.querySelector("#class-form [name='dancestyle']").value = cls.dancestyle;
-  document.querySelector("#class-form [name='level']").value = cls.level;
-  document.querySelector("#class-form [name='day']").value = cls.day;
-  document.querySelector("#class-form [name='start_time']").value = cls.start_time?.slice(0,5);
-  document.querySelector("#class-form [name='end_time']").value = cls.end_time?.slice(0,5);
-  editingClassId = cls.id;
-
-  document.querySelector("#class-form button[type='submit']").textContent = "💾 Update Class";
-}
-
-document.getElementById("class-form").addEventListener("submit", async e => {
+// Form submission to add a new class
+document.getElementById("class-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const form = e.target;
-
   const newClass = {
     dancestyle: form.dancestyle.value.trim(),
     level: parseInt(form.level.value),
     day: form.day.value,
     start_time: form.start_time.value,
-    end_time: form.end_time.value
+    end_time: form.end_time.value,
+    active: true
   };
 
-  let error;
-  if (editingClassId) {
-    // update bestaande klas
-    ({ error } = await supabase
-      .from("classes")
-      .update(newClass)
-      .eq("id", editingClassId));
-  } else {
-    // nieuwe klas toevoegen
-    ({ error } = await supabase.from("classes").insert([newClass]));
-  }
+  const { error } = await supabase.from("classes").insert([newClass]);
 
   if (error) {
-    alert("Fout bij opslaan klas: " + error.message);
+    alert("Failed to add class: " + error.message);
     return;
   }
 
   form.reset();
-  editingClassId = null;
-  form.querySelector("button[type='submit']").textContent = "Add Class";
   loadClasses();
 });
 
+// Initial load
 loadClasses();
