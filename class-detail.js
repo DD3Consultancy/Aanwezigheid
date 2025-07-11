@@ -16,21 +16,28 @@ async function loadClassDetails(classId) {
     .maybeSingle();
 
   if (error) {
-    console.error("Fout bij ophalen klasdetails:", error);
+    console.error("❌ Fout bij laden klasdetails:", error);
     return;
   }
 
   if (classData) {
-    const detailsDiv = document.getElementById("class-details");
-detailsDiv.innerHTML = `
-  <div><span>Dansstijl</span><span>${classData.dancestyle}</span></div>
-  <div><span>Niveau</span><span>${classData.level}</span></div>
-  <div><span>Dag</span><span>${classData.day}</span></div>
-  <div><span>Starttijd</span><span>${classData.start_time}</span></div>
-  <div><span>Eindtijd</span><span>${classData.end_time}</span></div>
-`;
+    const container = document.getElementById("class-info");
+    container.innerHTML = `
+      <div style="display: flex; gap: 2rem; margin-bottom: 1rem;">
+        <table>
+          <tr><td><strong>Dansstijl:</strong></td><td>${classData.dancestyle}</td></tr>
+          <tr><td><strong>Niveau:</strong></td><td>${classData.level}</td></tr>
+          <tr><td><strong>Dag:</strong></td><td>${classData.day}</td></tr>
+        </table>
+        <table>
+          <tr><td><strong>Starttijd:</strong></td><td>${classData.start_time}</td></tr>
+          <tr><td><strong>Eindtijd:</strong></td><td>${classData.end_time}</td></tr>
+        </table>
+      </div>
+    `;
   }
 }
+
 
 async function loadAttendingStudents(classId) {
   try {
