@@ -11,7 +11,7 @@ if (!classId) {
 async function loadClassDetails(classId) {
   const { data: classData, error } = await supabase
     .from("classes")
-    .select("dance_style, level, day, start_time, end_time")
+    .select("dancestyle, level, day, start_time, end_time")
     .eq("id", classId)
     .maybeSingle();
 
@@ -23,7 +23,7 @@ async function loadClassDetails(classId) {
   if (classData) {
     const detailsDiv = document.getElementById("class-details");
 detailsDiv.innerHTML = `
-  <div><span>Dansstijl</span><span>${classData.dance_style}</span></div>
+  <div><span>Dansstijl</span><span>${classData.dancestyle}</span></div>
   <div><span>Niveau</span><span>${classData.level}</span></div>
   <div><span>Dag</span><span>${classData.day}</span></div>
   <div><span>Starttijd</span><span>${classData.start_time}</span></div>
