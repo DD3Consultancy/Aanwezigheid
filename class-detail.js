@@ -42,7 +42,6 @@ async function loadAttendingStudents(classId) {
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${student.id}</td>
         <td>${student.firstname}</td>
         <td>${student.lastname}</td>
         <td>${student.email || ''}</td>
