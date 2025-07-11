@@ -1,164 +1,134 @@
 // class-detail.js
 
-let classes = []; // Globale array voor loaded classes
-const form = document.getElementById("class-form");
-const submitBtn = document.getElementById("submit-button");
-const cancelBtn = document.getElementById("cancel-edit");
-const activeTbody = document.querySelector("#active-classes-table tbody");
-const inactiveTbody = document.querySelector("#inactive-classes-table tbody");
+// 📌 Haal class_id op uit de URL
+const urlParams = new URLSearchParams(window.location.search);
+const classId = urlParams.get("class_id");
 
-let editingClassId = null; // Houdt bij welke klas wordt bewerkt
+console.log("🌐 URL class_id parameter:", classId);
 
-async function loadClasses() {
-  const { data, error } = await supabase
-    .from("classes")
-    .select("*")
-    .order("dancestyle")
-    .order("level");
-
-  if (error) {
-    console.error("Error loading classes:", error.message);
-    return;
-  }
-
-  classes = data;
-
-  const activeClasses = classes.filter(c => c.active);
-  const inactiveClasses = classes.filter(c => !c.active);
-
-  activeTbody.innerHTML = "";
-  inactiveTbody.innerHTML = "";
-
-  activeClasses.forEach(cls => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${cls.dancestyle}</td>
-      <td>${cls.level}</td>
-      <td>${cls.day}</td>
-      <td>${cls.start_time?.slice(0,5) || ''}</td>
-      <td>${cls.end_time?.slice(0,5) || ''}</td>
-      <td><input type="checkbox" checked data-id="${cls.id}" /></td>
-      <td><button class="edit-button" data-id="${cls.id}">Edit</button></td>
-    `;
-    activeTbody.appendChild(tr);
-  });
-
-  inactiveClasses.forEach(cls => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${cls.dancestyle}</td>
-      <td>${cls.level}</td>
-      <td>${cls.day}</td>
-      <td>${cls.start_time?.slice(0,5) || ''}</td>
-      <td>${cls.end_time?.slice(0,5) || ''}</td>
-      <td><input type="checkbox" data-id="${cls.id}" /></td>
-      <td><button class="edit-button" data-id="${cls.id}">Edit</button></td>
-    `;
-    inactiveTbody.appendChild(tr);
-  });
+if (!classId) {
+  alert("Geen klas geselecteerd. Selecteer eerst een klas.");
+} else {
+  loadAttendingStudents(classId);
 }
 
-// Zet formulier in bewerk modus
-function enterEditMode(classObj) {
-  editingClassId = classObj.id;
-  form.dancestyle.value = classObj.dancestyle;
-  form.level.value = classObj.level;
-  form.day.value = classObj.day;
-  form.start_time.value = classObj.start_time?.slice(0,5) || "";
-  form.end_time.value = classObj.end_time?.slice(0,5) || "";
+async function loadAttendingStudents(classId) {
+  try {
+    console.log("🔍 Laden van studenten voor klas-ID:", classId);
 
-  submitBtn.textContent = "Update Class";
-  cancelBtn.style.display = "inline-block";
-}
-
-// Zet formulier terug naar standaard modus (nieuw toevoegen)
-function exitEditMode() {
-  editingClassId = null;
-  form.reset();
-  submitBtn.textContent = "Add Class";
-  cancelBtn.style.display = "none";
-}
-
-// Checkbox wijziging active status
-document.body.addEventListener("change", async (e) => {
-  if (e.target.type === "checkbox" && e.target.dataset.id) {
-    const classId = e.target.dataset.id;
-    const newActive = e.target.checked;
-
-    const { error } = await supabase
-      .from("classes")
-      .update({ active: newActive })
-      .eq("id", classId);
+    const { data: studentLinks, error } = await supabase
+      .from("student_classes")
+      .select("id, students (id, firstname, lastname, email)")
+      .eq("class_id", classId);
 
     if (error) {
-      alert("Failed to update active status: " + error.message);
-      e.target.checked = !newActive; // revert checkbox bij fout
+      console.error("❌ Fout bij ophalen studenten:", error);
+      alert("Fout bij laden van studenten: " + error.message);
       return;
     }
 
-    loadClasses();
-  }
-});
+    console.log("✅ Studenten opgehaald via student_classes:", studentLinks);
 
-// Edit knop click handler
-document.body.addEventListener("click", e => {
-  if(e.target.classList.contains("edit-button")) {
-    const classId = e.target.dataset.id;
-    const cls = classes.find(c => c.id == classId);
-    if (cls) {
-      enterEditMode(cls);
-    }
-  }
-});
-
-// Cancel edit knop
-cancelBtn.addEventListener("click", () => {
-  exitEditMode();
-});
-
-// Form submit handler (add of update)
-form.addEventListener("submit", async e => {
-  e.preventDefault();
-
-  const newClass = {
-    dancestyle: form.dancestyle.value.trim(),
-    level: parseInt(form.level.value),
-    day: form.day.value,
-    start_time: form.start_time.value,
-    end_time: form.end_time.value,
-    active: true
-  };
-
-  if (editingClassId) {
-    // Update bestaande klas
-    const { error } = await supabase
-      .from("classes")
-      .update(newClass)
-      .eq("id", editingClassId);
-
-    if (error) {
-      alert("Failed to update class: " + error.message);
+    const tbody = document.querySelector("#students-table tbody");
+    if (!tbody) {
+      console.warn("⚠️ Geen <tbody> gevonden in de HTML met id='students-table'");
       return;
     }
 
-    exitEditMode();
-  } else {
-    // Voeg nieuwe klas toe
-    const { error } = await supabase.from("classes").insert([newClass]);
+    tbody.innerHTML = "";
 
-    if (error) {
-      alert("Failed to add class: " + error.message);
+    if (!studentLinks || studentLinks.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='15'>Geen studenten gekoppeld aan deze klas.</td></tr>";
       return;
     }
 
-    form.reset();
+    for (const link of studentLinks) {
+      const student = link.students;
+      const studentClassId = link.id;
+
+      if (!student) {
+        console.warn("⚠️ Lege student-link object:", link);
+        continue;
+      }
+
+      // Haal aanwezigheid op
+      const { data: aanwezigheid, error: attError } = await supabase
+        .from("attendance")
+        .select("lesson_number, aanwezig")
+        .eq("student_class_id", studentClassId);
+
+      if (attError) {
+        console.warn("⚠️ Fout bij ophalen aanwezigheid:", attError.message);
+      }
+
+      const aanwezigMap = {};
+      if (aanwezigheid) {
+        aanwezigheid.forEach(a => {
+          aanwezigMap[a.lesson_number] = a.aanwezig;
+        });
+      }
+
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${student.firstname}</td>
+        <td>${student.lastname}</td>
+        <td>${student.email || ''}</td>
+      `;
+
+      // Voeg 12 checkboxes toe
+      for (let i = 1; i <= 12; i++) {
+        const td = document.createElement("td");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = aanwezigMap[i] === true;
+
+        checkbox.addEventListener("change", () => {
+          saveAttendance(studentClassId, i, checkbox.checked);
+        });
+
+        td.appendChild(checkbox);
+        tr.appendChild(td);
+      }
+
+      tbody.appendChild(tr);
+    }
+
+  } catch (err) {
+    console.error("🚨 Onverwachte fout:", err);
+    alert("Onverwachte fout: " + err.message);
   }
+}
 
-  loadClasses();
-});
+async function saveAttendance(studentClassId, lessonNumber, aanwezig) {
+  try {
+    const { data: existing, error: fetchError } = await supabase
+      .from("attendance")
+      .select("id")
+      .eq("student_class_id", studentClassId)
+      .eq("lesson_number", lessonNumber)
+      .maybeSingle();
 
-// Zet de cancel knop eerst verborgen
-cancelBtn.style.display = "none";
+    if (fetchError) throw fetchError;
 
-// Start met laden van klassen
-loadClasses();
+    if (existing) {
+      const { error: updateError } = await supabase
+        .from("attendance")
+        .update({ aanwezig })
+        .eq("id", existing.id);
+
+      if (updateError) throw updateError;
+      console.log(`✅ Update: Les ${lessonNumber} → ${aanwezig ? 'aanwezig' : 'afwezig'}`);
+    } else {
+      const { error: insertError } = await supabase
+        .from("attendance")
+        .insert([{ student_class_id: studentClassId, lesson_number: lessonNumber, aanwezig }]);
+
+      if (insertError) throw insertError;
+      console.log(`✅ Toegevoegd: Les ${lessonNumber} → ${aanwezig ? 'aanwezig' : 'afwezig'}`);
+    }
+  } catch (err) {
+    console.error("❌ Fout bij opslaan aanwezigheid:", err.message);
+    alert("Fout bij opslaan aanwezigheid: " + err.message);
+  }
+}
