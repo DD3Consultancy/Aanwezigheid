@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Manage Classes</title>
+  <title>Class Detail</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,31 +11,13 @@
       max-width: 900px;
       margin: auto;
     }
-    h1, h2 {
+    h1 {
       margin-bottom: 1rem;
-    }
-    form {
-      margin-bottom: 1rem;
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    form input, form select, form button {
-      padding: 6px;
-      font-size: 1rem;
-    }
-    form input[type="number"] {
-      width: 60px;
-    }
-    form select {
-      width: 110px;
     }
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 1rem;
-      margin-bottom: 2rem;
     }
     th, td {
       padding: 0.5rem;
@@ -45,113 +27,47 @@
     th {
       background-color: #f4f4f4;
     }
-    button {
-      cursor: pointer;
+    a {
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      width: 100%;
+      height: 100%;
     }
-    .edit-button {
-      background: #f0ad4e;
-      border: none;
-      padding: 4px 8px;
-      border-radius: 3px;
-      color: white;
-      font-weight: bold;
+    button {
+      padding: 6px 12px;
+      margin-top: 1rem;
     }
   </style>
 </head>
 <body>
 
-<nav style="background: #222; padding: 0.5rem 1rem; color: white; font-family: Arial, sans-serif;">
-  <a href="index.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Students</a>
-  <a href="classes.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Manage Classes</a>
-  <a href="aanwezigheid.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Aanwezigheid</a>
-</nav>
+  <h1 id="class-title">Class Detail</h1>
 
-<h1>Manage Classes</h1>
+  <table id="students-table">
+    <thead>
+      <tr>
+        <th>Voornaam</th>
+        <th>Achternaam</th>
+        <th colspan="12">Aanwezigheid per les</th>
+      </tr>
+      <tr>
+        <th></th><th></th>
+        <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th>
+        <th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Studenten komen hier -->
+    </tbody>
+  </table>
 
-<form id="class-form" autocomplete="off">
-  <input type="text" name="dancestyle" placeholder="Dance Style" required />
-  <input type="number" name="level" placeholder="Level" min="1" required />
-  <select name="day" required>
-    <option value="" disabled selected>Day</option>
-    <option>Monday</option>
-    <option>Tuesday</option>
-    <option>Wednesday</option>
-    <option>Thursday</option>
-    <option>Friday</option>
-    <option>Saturday</option>
-    <option>Sunday</option>
-  </select>
-  <select name="start_time" required>
-    <option value="" disabled selected>Start Time</option>
-    <option value="19:00">19:00</option>
-    <option value="19:30">19:30</option>
-    <option value="20:00">20:00</option>
-    <option value="20:30">20:30</option>
-    <option value="21:00">21:00</option>
-  </select>
-  <select name="end_time" required>
-    <option value="" disabled selected>End Time</option>
-    <option value="20:00">20:00</option>
-    <option value="20:30">20:30</option>
-    <option value="21:00">21:00</option>
-    <option value="21:30">21:30</option>
-    <option value="22:00">22:00</option>
-  </select>
-  <button type="submit" id="submit-button">Add Class</button>
-  <button type="button" id="cancel-edit" style="display:none;">Cancel Edit</button>
-</form>
+  <button onclick="window.history.back()">⬅️ Back</button>
 
-<h2>Active Classes</h2>
-<table id="active-classes-table">
-  <thead>
-    <tr>
-      <th>Dance Style</th>
-      <th>Level</th>
-      <th>Day</th>
-      <th>Start Time</th>
-      <th>End Time</th>
-      <th>Active</th>
-      <th>Edit</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<h2>Inactive Classes</h2>
-<table id="inactive-classes-table">
-  <thead>
-    <tr>
-      <th>Dance Style</th>
-      <th>Level</th>
-      <th>Day</th>
-      <th>Start Time</th>
-      <th>End Time</th>
-      <th>Active</th>
-      <th>Edit</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<!-- Supabase library -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<!-- Your Supabase client -->
-<script src="supabaseClient.js"></script>
-<!-- Page-specific JS -->
-<script src="classes.js"></script>
-
-<script>
-  // Highlight current nav link
-  const navLinks = document.querySelectorAll("nav a");
-  const currentPath = window.location.pathname.split("/").pop();
-
-  navLinks.forEach(link => {
-    if(link.getAttribute("href") === currentPath) {
-      link.style.fontWeight = "bold";
-      link.style.textDecoration = "underline";
-    }
-  });
-</script>
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="supabaseClient.js"></script>
+  <script src="class-detail.js"></script>
 
 </body>
 </html>
