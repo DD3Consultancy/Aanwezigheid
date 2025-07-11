@@ -8,9 +8,10 @@ form.addEventListener("submit", async (e) => {
   const firstname = document.getElementById("firstname").value;
   const lastname = document.getElementById("lastname").value;
   const email = document.getElementById("email").value;
+  const geslacht = document.getElementById("geslacht").value;
 
   const { error } = await supabase.from("students").insert([
-    { firstname, lastname, email },
+    { firstname, lastname, email, geslacht },
   ]);
   if (error) alert("Error: " + error.message);
   else {
@@ -40,6 +41,7 @@ async function loadStudents() {
       <td>${student.firstname}</td>
       <td>${student.lastname}</td>
       <td>${student.email || ''}</td>
+      <td>${student.geslacht || ''}</td>
       <td><a href="student-detail.html?id=${student.id}">View Details</a></td>
     `;
     tbody.appendChild(tr);
