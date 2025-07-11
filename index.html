@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dance Attendance App</title>
+
+  <!-- Load Supabase JS client library first -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <!-- Load Supabase Client -->
+  <script src="supabaseClient.js"></script>
+  
+  <!-- Load your app code after Supabase is available -->
+  <script defer src="app.js"></script>
+
+
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+      max-width: 600px;
+      margin: auto;
+      background-color: #f9f9f9;
+    }
+
+    input, button {
+      display: block;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      font-size: 1rem;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    button {
+      cursor: pointer;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 0.375rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 2rem;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.75rem;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f3f4f6;
+    }
+  </style>
+</head>
+
+<body>
+<nav style="background: #222; padding: 0.5rem 1rem; color: white; font-family: Arial, sans-serif;">
+    <a href="index.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Students</a>
+    <a href="classes.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Manage Classes</a>
+    <a href="aanwezigheid.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Aanwezigheid</a>
+  </nav>
+  <h1>Student List</h1>
+
+  <form id="student-form">
+    <input type="text" id="firstname" placeholder="First name" required />
+    <input type="text" id="lastname" placeholder="Last name" required />
+    <input type="email" id="email" placeholder="Email (optional)" />
+    <button type="submit">Add Student</button>
+  </form>
+
+  <table id="students-table">
+  <thead>
+    <tr>
+      <th>First Name</th>
+      <th>Last Name</th>
+      <th>Email</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+    <tbody id="student-table-body"></tbody>
+  </table>
+</body>
+<script>
+  const navLinks = document.querySelectorAll("nav a");
+  const currentPath = window.location.pathname.split("/").pop();
+
+  navLinks.forEach(link => {
+    if(link.getAttribute("href") === currentPath) {
+      link.style.fontWeight = "bold";
+      link.style.textDecoration = "underline";
+    }
+  });
+</script>
+</html>

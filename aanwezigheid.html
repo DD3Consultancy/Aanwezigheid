@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aanwezigheid</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: auto;
+      padding: 1rem;
+    }
+    nav a {
+      margin-right: 1rem;
+      text-decoration: none;
+      color: #222;
+      font-weight: bold;
+    }
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+    }
+    button {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<nav style="background: #222; padding: 0.5rem 1rem; color: white; font-family: Arial, sans-serif;">
+    <a href="index.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Students</a>
+    <a href="classes.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Manage Classes</a>
+    <a href="aanwezigheid.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Aanwezigheid</a>
+  </nav>
+
+  <h1>Aanwezigheid</h1>
+
+  <table id="aanwezigheid-table">
+    <thead>
+      <tr>
+        <th>Dance Style</th>
+        <th>Level</th>
+        <th>Day</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Classes will load here -->
+    </tbody>
+  </table>
+
+  <!-- Supabase library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <!-- Shared Supabase client -->
+  <script src="supabaseClient.js"></script>
+  <!-- This page’s JS -->
+  <script src="aanwezigheid.js"></script>
+
+</body>
+</html>

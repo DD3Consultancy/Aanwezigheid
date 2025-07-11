@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Student Detail</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: auto;
+      padding: 1rem;
+    }
+    nav a {
+      margin-right: 1rem;
+      text-decoration: none;
+      color: #222;
+      font-weight: bold;
+    }
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+    }
+    button {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<nav style="background: #222; padding: 0.5rem 1rem; color: white; font-family: Arial, sans-serif;">
+    <a href="index.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Students</a>
+    <a href="classes.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Manage Classes</a>
+    <a href="aanwezigheid.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Aanwezigheid</a>
+  </nav>
+
+
+<h1>Student Detail</h1>
+
+<div id="student-info">
+  <!-- Student info will load here -->
+</div>
+
+<h2>Linked Classes</h2>
+<table id="linked-classes-table">
+  <thead>
+    <tr>
+      <th>Dance Style</th>
+      <th>Level</th>
+      <th>Day</th>
+      <th>Start</th>
+      <th>End</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<h2>Add Class</h2>
+<select id="add-class-select">
+  <option value="">-- Select class --</option>
+</select>
+<button id="add-class-btn">Add Class</button>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="supabaseClient.js"></script>
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  const studentId = urlParams.get('id');
+  if (!studentId) {
+    alert("No student ID provided");
+    throw new Error("No student ID provided");
+  }
+
+  async function loadStudent() {
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+      .eq('id', studentId)
+      .single();
+    if (error) {
+      alert("Error loading student: " + error.message);
+      return;
+    }
+    const div = document.getElementById('student-info');
+    div.innerHTML = `
+      <p><strong>First Name:</strong> ${data.firstname}</p>
+      <p><strong>Last Name:</strong> ${data.lastname}</p>
+      <p><strong>Email:</strong> ${data.email || '(none)'}</p>
+      <p><strong>Active:</strong> ${data.active ? 'Yes' : 'No'}</p>
+    `;
+  }
+
+  async function loadLinkedClasses() {
+    const { data, error } = await supabase
+      .from('student_classes')
+      .select(`id, classes(*)`)
+      .eq('student_id', studentId);
+
+    if (error) {
+      alert("Error loading linked classes: " + error.message);
+      return;
+    }
+
+    const tbody = document.querySelector('#linked-classes-table tbody');
+    tbody.innerHTML = '';
+
+    data.forEach(link => {
+      const cls = link.classes;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${cls.dancestyle}</td>
+        <td>${cls.level}</td>
+        <td>${cls.day}</td>
+        <td>${cls.start_time?.slice(0,5) || ''}</td>
+        <td>${cls.end_time?.slice(0,5) || ''}</td>
+        <td><button data-link-id="${link.id}">Remove</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Attach remove button listeners
+    tbody.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const linkId = btn.getAttribute('data-link-id');
+        const { error } = await supabase
+          .from('student_classes')
+          .delete()
+          .eq('id', linkId);
+        if (error) {
+          alert("Failed to remove class: " + error.message);
+          return;
+        }
+        loadLinkedClasses();
+      });
+    });
+  }
+
+  async function loadAvailableClasses() {
+    const { data, error } = await supabase
+      .from('classes')
+      .select('*')
+      .eq('active', true)
+      .order('dancestyle')
+      .order('level');
+
+    if (error) {
+      alert("Error loading classes: " + error.message);
+      return;
+    }
+
+    const select = document.getElementById('add-class-select');
+    select.innerHTML = `<option value="">-- Select class --</option>`;
+
+    data.forEach(cls => {
+      select.innerHTML += `<option value="${cls.id}">${cls.dancestyle} Level ${cls.level} (${cls.day} ${cls.start_time?.slice(0,5)})</option>`;
+    });
+  }
+
+  document.getElementById('add-class-btn').addEventListener('click', async () => {
+    const select = document.getElementById('add-class-select');
+    const classId = select.value;
+    if (!classId) {
+      alert("Select a class to add");
+      return;
+    }
+
+    // Check if already linked
+    const { data: existing, error } = await supabase
+      .from('student_classes')
+      .select('*')
+      .eq('student_id', studentId)
+      .eq('class_id', classId);
+
+    if (error) {
+      alert("Error checking existing links: " + error.message);
+      return;
+    }
+    if (existing.length > 0) {
+      alert("Student is already linked to this class");
+      return;
+    }
+
+    const { error: insertError } = await supabase
+      .from('student_classes')
+      .insert([{ student_id: studentId, class_id: classId }]);
+
+    if (insertError) {
+      alert("Failed to link class: " + insertError.message);
+      return;
+    }
+
+    select.value = '';
+    loadLinkedClasses();
+  });
+
+  // Initial load
+  loadStudent();
+  loadLinkedClasses();
+  loadAvailableClasses();
+</script>
+</body>
+</html>
