@@ -18,7 +18,7 @@ async function loadAttendingStudents(classId) {
 
     const { data: studentLinks, error } = await supabase
       .from("student_classes")
-      .select("id, students (id, firstname, lastname, email)")
+      .select("id, students (id, firstname, lastname)")
       .eq("class_id", classId);
 
     if (error) {
