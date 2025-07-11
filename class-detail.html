@@ -46,28 +46,32 @@
 
   <table id="students-table">
     <thead>
-      <tr>
-        <th>Voornaam</th>
-        <th>Achternaam</th>
-        <th colspan="12">Aanwezigheid per les</th>
-      </tr>
-      <tr>
-        <th></th><th></th>
-        <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th>
-        <th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th>
-      </tr>
-    </thead>
+  <tr>
+    <th>Voornaam</th>
+    <th>Achternaam</th>
+    <th colspan="12">Aanwezigheid per les</th>
+  </tr>
+  <tr>
+    <th></th><th></th>
+    <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th>
+    <th>7</th><th>8</th><th>9</th><th>10</th><th>11</th><th>12</th>
+  </tr>
+</thead>
     <tbody>
-      <!-- Studenten komen hier -->
+      <!-- Students will load here -->
     </tbody>
   </table>
 
   <button onclick="window.history.back()">⬅️ Back</button>
 
-  <!-- Supabase -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-  <script src="supabaseClient.js"></script>
-  <script src="class-detail.js"></script>
+<!-- Supabase library -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<!-- Jouw Supabase client (maakt 'supabase' beschikbaar) -->
+<script src="supabaseClient.js"></script>
+
+<!-- De pagina-specifieke logica -->
+<script src="class-detail.js"></script>
 
 </body>
 </html>
