@@ -73,7 +73,6 @@ async function loadAttendingStudents(classId) {
       tr.innerHTML = `
         <td>${student.firstname}</td>
         <td>${student.lastname}</td>
-        <td>${student.email || ''}</td>
       `;
 
       // Voeg 12 checkboxes toe
