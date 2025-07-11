@@ -22,13 +22,13 @@ async function loadClassDetails(classId) {
 
   if (classData) {
     const detailsDiv = document.getElementById("class-details");
-    detailsDiv.innerHTML = `
-      <p><strong>Dansstijl:</strong> ${classData.dance_style}</p>
-      <p><strong>Niveau:</strong> ${classData.level}</p>
-      <p><strong>Dag:</strong> ${classData.day}</p>
-      <p><strong>Starttijd:</strong> ${classData.start_time}</p>
-      <p><strong>Eindtijd:</strong> ${classData.end_time}</p>
-    `;
+detailsDiv.innerHTML = `
+  <div><span>Dansstijl</span><span>${classData.dance_style}</span></div>
+  <div><span>Niveau</span><span>${classData.level}</span></div>
+  <div><span>Dag</span><span>${classData.day}</span></div>
+  <div><span>Starttijd</span><span>${classData.start_time}</span></div>
+  <div><span>Eindtijd</span><span>${classData.end_time}</span></div>
+`;
   }
 }
 
