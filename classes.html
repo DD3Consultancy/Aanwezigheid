@@ -28,7 +28,7 @@
     form input[type="number"] {
       width: 60px;
     }
-    form select, form input[type="time"] {
+    form select {
       width: 110px;
     }
     table {
@@ -48,8 +48,17 @@
     button {
       cursor: pointer;
     }
+    .edit-button {
+      background: #f0ad4e;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 3px;
+      color: white;
+      font-weight: bold;
+    }
   </style>
 </head>
+<body>
 <nav style="background: #222; padding: 0.5rem 1rem; color: white; font-family: Arial, sans-serif;">
     <a href="index.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Students</a>
     <a href="classes.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Manage Classes</a>
@@ -87,7 +96,8 @@
       <option value="21:30">21:30</option>
       <option value="22:00">22:00</option>
     </select>
-    <button type="submit">Add Class</button>
+    <button type="submit" id="submit-button">Add Class</button>
+    <button type="button" id="cancel-edit" style="display:none;">Cancel Edit</button>
   </form>
 
   <h2>Active Classes</h2>
@@ -100,6 +110,7 @@
         <th>Start Time</th>
         <th>End Time</th>
         <th>Active</th>
+        <th>Edit</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -115,6 +126,7 @@
         <th>Start Time</th>
         <th>End Time</th>
         <th>Active</th>
+        <th>Edit</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -127,16 +139,17 @@
   <!-- Page-specific JS -->
   <script src="classes.js"></script>
 
-</body>
-<script>
-  const navLinks = document.querySelectorAll("nav a");
-  const currentPath = window.location.pathname.split("/").pop();
+  <script>
+    // Highlight current nav link
+    const navLinks = document.querySelectorAll("nav a");
+    const currentPath = window.location.pathname.split("/").pop();
 
-  navLinks.forEach(link => {
-    if(link.getAttribute("href") === currentPath) {
-      link.style.fontWeight = "bold";
-      link.style.textDecoration = "underline";
-    }
-  });
-</script>
+    navLinks.forEach(link => {
+      if(link.getAttribute("href") === currentPath) {
+        link.style.fontWeight = "bold";
+        link.style.textDecoration = "underline";
+      }
+    });
+  </script>
+</body>
 </html>
