@@ -9,56 +9,35 @@ if (!classId) {
 }
 
 async function loadClassDetails(classId) {
-  // Stap 1: Haal klasdetails op
   const { data: classData, error } = await supabase
     .from("classes")
     .select("dancestyle, level, day, start_time, end_time")
     .eq("id", classId)
     .maybeSingle();
 
-  if (error || !classData) {
+  if (error) {
     console.error("❌ Fout bij laden klasdetails:", error);
     return;
   }
 
-  // Stap 2: Haal studenten met geslacht op
-  const { data: studentLinks, error: studentError } = await supabase
-    .from("student_classes")
-    .select("students (geslacht)")
-    .eq("class_id", classId);
-
-  if (studentError) {
-    console.error("❌ Fout bij laden studenten:", studentError);
-    return;
+  if (classData) {
+    const container = document.getElementById("class-info");
+    container.innerHTML = `
+      <div style="display: flex; gap: 2rem; margin-bottom: 1rem;">
+        <table>
+          <tr><td><strong>Dansstijl:</strong></td><td>${classData.dancestyle}</td></tr>
+          <tr><td><strong>Niveau:</strong></td><td>${classData.level}</td></tr>
+          <tr><td><strong>Dag:</strong></td><td>${classData.day}</td></tr>
+        </table>
+        <table>
+          <tr><td><strong>Starttijd:</strong></td><td>${classData.start_time}</td></tr>
+          <tr><td><strong>Eindtijd:</strong></td><td>${classData.end_time}</td></tr>
+        </table>
+      </div>
+    `;
   }
-
-  // Stap 3: Tel mannen en vrouwen
-  let manTeller = 0;
-  let vrouwTeller = 0;
-
-  studentLinks.forEach(link => {
-    const geslacht = link.students?.geslacht?.toLowerCase();
-    if (geslacht === "man") manTeller++;
-    else if (geslacht === "vrouw") vrouwTeller++;
-  });
-
-  // Stap 4: Toon alles in twee kolommen
-  const container = document.getElementById("class-info");
-  container.innerHTML = `
-    <div style="display: flex; gap: 2rem; margin-bottom: 1rem;">
-      <table>
-        <tr><td><strong>Dansstijl:</strong></td><td>${classData.dancestyle}</td></tr>
-        <tr><td><strong>Niveau:</strong></td><td>${classData.level}</td></tr>
-        <tr><td><strong>Dag:</strong></td><td>${classData.day}</td></tr>
-      </table>
-      <table>
-        <tr><td><strong>Starttijd:</strong></td><td>${classData.start_time}</td></tr>
-        <tr><td><strong>Eindtijd:</strong></td><td>${classData.end_time}</td></tr>
-        <tr><td colspan="2"><strong>Mannen:</strong> ${manTeller} — <strong>Vrouwen:</strong> ${vrouwTeller}</td></tr>
-      </table>
-    </div>
-  `;
 }
+
 
 
 
