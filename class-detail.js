@@ -27,83 +27,56 @@ async function loadAttendingStudents(classId) {
       return;
     }
 
-    // Split studenten op geslacht
-    const vrouwen = studentLinks.filter(s => s.students.geslacht === "vrouw");
-    const mannen = studentLinks.filter(s => s.students.geslacht === "man");
-    const onbekend = studentLinks.filter(s => !s.students.geslacht || (s.students.geslacht !== "vrouw" && s.students.geslacht !== "man"));
+    for (const link of studentLinks) {
+      const student = link.students;
+      const studentClassId = link.id;
 
-    // Functie om groep te renderen
-    async function renderGroep(naam, groep) {
-      if (groep.length === 0) return;
+      // Haal aanwezigheid op
+      const { data: aanwezigheid, error: attError } = await supabase
+        .from("attendance")
+        .select("lesson_number, aanwezig")
+        .eq("student_class_id", studentClassId);
 
-      // Groep header
-      const headerRow = document.createElement("tr");
-      const headerCell = document.createElement("td");
-      headerCell.colSpan = 14;
-      headerCell.style.backgroundColor = "#eee";
-      headerCell.style.fontWeight = "bold";
-      headerCell.textContent = naam;
-      headerRow.appendChild(headerCell);
-      tbody.appendChild(headerRow);
-
-      for (const link of groep) {
-        const student = link.students;
-        const studentClassId = link.id;
-
-        // Haal aanwezigheid op
-        const { data: aanwezigheid, error: attError } = await supabase
-          .from("attendance")
-          .select("lesson_number, aanwezig")
-          .eq("student_class_id", studentClassId);
-
-        const aanwezigMap = {};
-        if (!attError && aanwezigheid) {
-          aanwezigheid.forEach(a => {
-            aanwezigMap[a.lesson_number] = a.aanwezig;
-          });
-        }
-
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${student.firstname}</td>
-          <td>${student.lastname}</td>
-          <td>${student.geslacht || ''}</td>
-        `;
-
-        for (let i = 1; i <= 12; i++) {
-          const td = document.createElement("td");
-          const checkbox = document.createElement("input");
-          checkbox.type = "checkbox";
-          checkbox.checked = aanwezigMap[i] === true;
-
-          checkbox.addEventListener("change", async () => {
-            checkbox.disabled = true;
-            checkbox.title = "Opslaan...";
-
-            try {
-              await saveAttendance(studentClassId, i, checkbox.checked);
-              checkbox.title = checkbox.checked ? "Aanwezig" : "Afwezig";
-            } catch (err) {
-              alert("❌ Fout bij opslaan: " + err.message);
-              checkbox.checked = !checkbox.checked;
-            }
-
-            checkbox.disabled = false;
-          });
-
-          td.appendChild(checkbox);
-          tr.appendChild(td);
-        }
-
-        tbody.appendChild(tr);
+      const aanwezigMap = {};
+      if (!attError && aanwezigheid) {
+        aanwezigheid.forEach(a => {
+          aanwezigMap[a.lesson_number] = a.aanwezig;
+        });
       }
-    }
 
-    // Eerst vrouwen, dan mannen, dan onbekend als die er zijn
-    await renderGroep("Vrouwen", vrouwen);
-    await renderGroep("Mannen", mannen);
-    if (onbekend.length > 0) {
-      await renderGroep("Onbekend geslacht", onbekend);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${student.firstname}</td>
+        <td>${student.lastname}</td>
+        <td>${student.geslacht || ''}</td>
+      `;
+
+      for (let i = 1; i <= 12; i++) {
+        const td = document.createElement("td");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = aanwezigMap[i] === true;
+
+        checkbox.addEventListener("change", async () => {
+          checkbox.disabled = true;
+          checkbox.title = "Opslaan...";
+
+          try {
+            await saveAttendance(studentClassId, i, checkbox.checked);
+            checkbox.title = checkbox.checked ? "Aanwezig" : "Afwezig";
+          } catch (err) {
+            alert("❌ Fout bij opslaan: " + err.message);
+            checkbox.checked = !checkbox.checked;
+          }
+
+          checkbox.disabled = false;
+        });
+
+        td.appendChild(checkbox);
+        tr.appendChild(td);
+      }
+
+      tbody.appendChild(tr);
     }
 
   } catch (err) {
