@@ -4,46 +4,51 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Class Detail</title>
-  <style>
   body {
-    font-family: Arial, sans-serif;
-    padding: 1rem;
-    max-width: 100%;
-    margin: auto;
-    overflow-x: auto;
-  }
-  h1 {
-    margin-bottom: 1rem;
-  }
-  table {
-    width: max-content; /* laat horizontaal scrollen toe */
-    border-collapse: collapse;
-    margin-top: 1rem;
-  }
-  th, td {
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    text-align: left;
-    background-color: white;
-  }
-  th {
-    background-color: #f4f4f4;
-  }
-  button {
-    padding: 6px 12px;
-    margin-top: 1rem;
-  }
+  font-family: Arial, sans-serif;
+  padding: 1rem;
+  max-width: 100%;
+  margin: auto;
+  overflow-x: auto; /* Houd deze voor horizontaal scrollen */
+}
+h1 {
+  margin-bottom: 1rem;
+}
+table {
+  width: max-content; /* Laat horizontaal scrollen toe */
+  border-collapse: collapse;
+  margin-top: 1rem;
 
-  /* 📌 Sticky voornaamkolom (eerste kolom) */
-  td:first-child,
-  th:first-child {
-    position: sticky;
-    left: 0;
-    background-color: #f9f9f9;
-    z-index: 1;
-  }
-  }
-    .class-details-table {
+  /* Toevoegen voor betere sticky ondersteuning */
+  table-layout: fixed;  /* Zorgt dat kolommen stabiel zijn */
+  min-width: max-content; /* voorkomt te smalle tabel */
+}
+th, td {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  text-align: left;
+  background-color: white;
+}
+th {
+  background-color: #f4f4f4;
+}
+button {
+  padding: 6px 12px;
+  margin-top: 1rem;
+}
+
+/* 📌 Sticky voornaamkolom (eerste kolom) */
+td:first-child,
+th:first-child {
+  position: sticky;
+  left: 0;
+  background-color: #f9f9f9;
+  z-index: 10; /* hoger dan andere cellen */
+  box-shadow: 2px 0 5px -2px rgba(0,0,0,0.3); /* lichte schaduw voor scheiding */
+}
+
+/* Jouw bestaande class-details-table CSS mag zo blijven */
+.class-details-table {
   display: table;
   border: 1px solid #ccc;
   margin-bottom: 1.5rem;
@@ -67,8 +72,6 @@
   background-color: #f4f4f4;
   width: 180px;
 }
-
-</style>
 </head>
 <body>
 
