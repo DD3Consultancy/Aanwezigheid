@@ -68,6 +68,7 @@ async function loadAttendingStudents(classId) {
         tr.innerHTML = `
           <td>${student.firstname}</td>
           <td>${student.lastname}</td>
+          <td>${student.geslacht || ''}</td>
         `;
 
         for (let i = 1; i <= 12; i++) {
