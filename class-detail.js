@@ -38,9 +38,6 @@ async function loadClassDetails(classId) {
   }
 }
 
-
-
-
 async function loadAttendingStudents(classId) {
   try {
     const { data: studentLinks, error } = await supabase
