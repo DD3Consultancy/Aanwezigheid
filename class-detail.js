@@ -1,4 +1,4 @@
-// classes.js
+// class-detail.js
 
 let classes = []; // Globale array voor loaded classes
 const form = document.getElementById("class-form");
