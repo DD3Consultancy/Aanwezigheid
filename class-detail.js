@@ -9,7 +9,6 @@ if (!classId) {
 
 async function loadAttendingStudents(classId) {
   try {
-    // Haal studenten met geslacht op
     const { data: studentLinks, error } = await supabase
       .from("student_classes")
       .select("id, students (id, firstname, lastname, geslacht)")
@@ -100,10 +99,12 @@ async function loadAttendingStudents(classId) {
       }
     }
 
-    // Eerst vrouwen, dan mannen, dan onbekend
+    // Eerst vrouwen, dan mannen, dan onbekend als die er zijn
     await renderGroep("Vrouwen", vrouwen);
     await renderGroep("Mannen", mannen);
-    await renderGroep("Onbekend geslacht", onbekend);
+    if (onbekend.length > 0) {
+      await renderGroep("Onbekend geslacht", onbekend);
+    }
 
   } catch (err) {
     alert("Onverwachte fout: " + err.message);
