@@ -1,7 +1,7 @@
 let editingClassId = null;
 let seasons = [];
 
-// 🔁 Haal seizoenen op en toon dropdown
+// 🔁 Haal seizoenen op en vul dropdown in bestaande form
 async function loadSeasons() {
   const { data, error } = await supabase
     .from("seasons")
@@ -22,15 +22,11 @@ async function loadSeasons() {
   `;
 }
 
-  const form = document.getElementById("class-form");
-  form.insertBefore(select, document.getElementById("submit-button"));
-}
-
-// ✅ Klassen laden inclusief seizoen
+// ✅ Laad klassen met gekoppeld seizoen
 async function loadClasses() {
   const { data: classes, error } = await supabase
     .from("classes")
-    .select("id, dancestyle, level, day, start_time, end_time, active, season_id, seasons(name)")
+    .select("id, dancestyle, level, day, start_time, end_time, active, season_id, season(name)")
     .order("dancestyle")
     .order("level");
 
@@ -56,7 +52,7 @@ async function loadClasses() {
       <td>${cls.day}</td>
       <td>${cls.start_time?.slice(0, 5) || ''}</td>
       <td>${cls.end_time?.slice(0, 5) || ''}</td>
-      <td>${cls.seasons?.name || '-'}</td>
+      <td>${cls.season?.name || '-'}</td>
       <td>
         <input type="checkbox" data-id="${cls.id}" ${isActive ? "checked" : ""} />
       </td>
@@ -71,7 +67,7 @@ async function loadClasses() {
   inactiveClasses.forEach(cls => inactiveTbody.appendChild(renderRow(cls, false)));
 }
 
-// ✅ Active toggle
+// 🔁 Active status toggle
 document.body.addEventListener("change", async (e) => {
   if (e.target.type === "checkbox" && e.target.dataset.id) {
     const classId = e.target.dataset.id;
@@ -92,7 +88,7 @@ document.body.addEventListener("change", async (e) => {
   }
 });
 
-// 🖊 Bewerken
+// 🖊 Bewerken van klas
 document.body.addEventListener("click", async (e) => {
   if (e.target.classList.contains("edit-button")) {
     const id = e.target.dataset.id;
