@@ -59,7 +59,7 @@
   </style>
 </head>
 <body>
-<nav style="background: #222; padding: 0.5rem 1rem; color: white; font-family: Arial, sans-serif;">
+  <nav style="background: #222; padding: 0.5rem 1rem; color: white; font-family: Arial, sans-serif;">
     <a href="index.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Students</a>
     <a href="classes.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Manage Classes</a>
     <a href="aanwezigheid.html" style="color: white; margin-right: 1.5rem; text-decoration: none;">Aanwezigheid</a>
@@ -96,6 +96,12 @@
       <option value="21:30">21:30</option>
       <option value="22:00">22:00</option>
     </select>
+
+    <!-- ✅ NIEUW: Seizoen dropdown -->
+    <select name="season_id" id="season-select" required>
+      <option value="" disabled selected>Select Season</option>
+    </select>
+
     <button type="submit" id="submit-button">Add Class</button>
     <button type="button" id="cancel-edit" style="display:none;">Cancel Edit</button>
   </form>
@@ -103,34 +109,34 @@
   <h2>Active Classes</h2>
   <table id="active-classes-table">
     <thead>
-  <tr>
-    <th>Dance Style</th>
-    <th>Level</th>
-    <th>Day</th>
-    <th>Start Time</th>
-    <th>End Time</th>
-    <th>Season</th>
-    <th>Active</th>
-    <th>Edit</th>
-  </tr>
-</thead>
+      <tr>
+        <th>Dance Style</th>
+        <th>Level</th>
+        <th>Day</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Season</th>
+        <th>Active</th>
+        <th>Edit</th>
+      </tr>
+    </thead>
     <tbody></tbody>
   </table>
 
   <h2>Inactive Classes</h2>
   <table id="inactive-classes-table">
     <thead>
-  <tr>
-    <th>Dance Style</th>
-    <th>Level</th>
-    <th>Day</th>
-    <th>Start Time</th>
-    <th>End Time</th>
-    <th>Season</th>
-    <th>Active</th>
-    <th>Edit</th>
-  </tr>
-</thead>
+      <tr>
+        <th>Dance Style</th>
+        <th>Level</th>
+        <th>Day</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Season</th>
+        <th>Active</th>
+        <th>Edit</th>
+      </tr>
+    </thead>
     <tbody></tbody>
   </table>
 
