@@ -26,7 +26,7 @@ async function loadSeasons() {
 async function loadClasses() {
   const { data: classes, error } = await supabase
     .from("classes")
-    .select("id, dancestyle, level, day, start_time, end_time, active, season_id, season(name)")
+    .select("id, dancestyle, level, day, start_time, end_time, active, season_id, seasons(name)")
     .order("dancestyle")
     .order("level");
 
