@@ -26,7 +26,7 @@ async function loadSeasons() {
 async function loadClasses() {
   const { data: classes, error } = await supabase
     .from("classes")
-    .select("id, dancestyle, level, day, start_time, end_time, active, seasons_id, seasons(name)")
+    .select("id, dancestyle, level, day, start_time, end_time, active, season_id, season(name)")
     .order("dancestyle")
     .order("level");
 
@@ -52,7 +52,7 @@ async function loadClasses() {
       <td>${cls.day}</td>
       <td>${cls.start_time?.slice(0, 5) || ''}</td>
       <td>${cls.end_time?.slice(0, 5) || ''}</td>
-      <td>${cls.seasons?.name || '-'}</td>
+      <td>${cls.season?.name || '-'}</td>
       <td>
         <input type="checkbox" data-id="${cls.id}" ${isActive ? "checked" : ""} />
       </td>
@@ -110,8 +110,19 @@ document.body.addEventListener("click", async (e) => {
     form.day.value = data.day;
     form.start_time.value = data.start_time;
     form.end_time.value = data.end_time;
-    form.seasons_id.value = data.seasons_id;
+    form.season_id.value = data.season_id;
+    document.getElementById("cancel-edit").style.display = "inline-block";
+    document.getElementById("submit-button").textContent = "Update Class";
   }
+});
+
+// Cancel Edit knop
+document.getElementById("cancel-edit").addEventListener("click", () => {
+  const form = document.getElementById("class-form");
+  form.reset();
+  editingClassId = null;
+  document.getElementById("cancel-edit").style.display = "none";
+  document.getElementById("submit-button").textContent = "Add Class";
 });
 
 // ➕ Toevoegen of bijwerken
@@ -124,7 +135,7 @@ document.getElementById("class-form").addEventListener("submit", async (e) => {
     day: form.day.value,
     start_time: form.start_time.value,
     end_time: form.end_time.value,
-    seasons_id: form.seasons_id.value
+    season_id: form.season_id.value
   };
 
   let error;
@@ -145,6 +156,8 @@ document.getElementById("class-form").addEventListener("submit", async (e) => {
 
   form.reset();
   editingClassId = null;
+  document.getElementById("cancel-edit").style.display = "none";
+  document.getElementById("submit-button").textContent = "Add Class";
   loadClasses();
 });
 
