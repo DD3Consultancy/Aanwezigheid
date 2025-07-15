@@ -1,10 +1,40 @@
-// Laad klassen
+let editingClassId = null;
+let seasons = [];
+
+// 🔁 Haal seizoenen op en toon dropdown
+async function loadSeasons() {
+  const { data, error } = await supabase
+    .from("seasons")
+    .select("id, name")
+    .order("order");
+
+  if (error) {
+    console.error("Fout bij laden seizoenen:", error.message);
+    return;
+  }
+
+  seasons = data || [];
+
+  const select = document.createElement("select");
+  select.name = "season_id";
+  select.required = true;
+
+  select.innerHTML = `
+    <option value="" disabled selected>Seizoen</option>
+    ${seasons.map(s => `<option value="${s.id}">${s.name}</option>`).join("")}
+  `;
+
+  const form = document.getElementById("class-form");
+  form.insertBefore(select, document.getElementById("submit-button"));
+}
+
+// ✅ Klassen laden inclusief seizoen
 async function loadClasses() {
-const { data: classes, error } = await supabase
-  .from("classes")
-  .select("id, dancestyle, level, day, start_time, end_time, active, seasons(name)")
-  .order("dancestyle")
-  .order("level");
+  const { data: classes, error } = await supabase
+    .from("classes")
+    .select("id, dancestyle, level, day, start_time, end_time, active, season_id, seasons(name)")
+    .order("dancestyle")
+    .order("level");
 
   if (error) {
     console.error("Error loading classes:", error.message);
@@ -43,7 +73,7 @@ const { data: classes, error } = await supabase
   inactiveClasses.forEach(cls => inactiveTbody.appendChild(renderRow(cls, false)));
 }
 
-// 🔁 Luister naar checkbox changes
+// ✅ Active toggle
 document.body.addEventListener("change", async (e) => {
   if (e.target.type === "checkbox" && e.target.dataset.id) {
     const classId = e.target.dataset.id;
@@ -65,8 +95,6 @@ document.body.addEventListener("change", async (e) => {
 });
 
 // 🖊 Bewerken
-let editingClassId = null;
-
 document.body.addEventListener("click", async (e) => {
   if (e.target.classList.contains("edit-button")) {
     const id = e.target.dataset.id;
@@ -88,6 +116,7 @@ document.body.addEventListener("click", async (e) => {
     form.day.value = data.day;
     form.start_time.value = data.start_time;
     form.end_time.value = data.end_time;
+    form.season_id.value = data.season_id;
   }
 });
 
@@ -100,7 +129,8 @@ document.getElementById("class-form").addEventListener("submit", async (e) => {
     level: parseInt(form.level.value),
     day: form.day.value,
     start_time: form.start_time.value,
-    end_time: form.end_time.value
+    end_time: form.end_time.value,
+    season_id: form.season_id.value
   };
 
   let error;
@@ -124,5 +154,5 @@ document.getElementById("class-form").addEventListener("submit", async (e) => {
   loadClasses();
 });
 
-// Initieel laden
-loadClasses();
+// 🚀 Start
+loadSeasons().then(loadClasses);
