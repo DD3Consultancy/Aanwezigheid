@@ -52,7 +52,7 @@ async function loadClasses() {
       <td>${cls.day}</td>
       <td>${cls.start_time?.slice(0, 5) || ''}</td>
       <td>${cls.end_time?.slice(0, 5) || ''}</td>
-      <td>${cls.season?.name || '-'}</td>
+      <td>${cls.seasons?.name || '-'}</td>
       <td>
         <input type="checkbox" data-id="${cls.id}" ${isActive ? "checked" : ""} />
       </td>
