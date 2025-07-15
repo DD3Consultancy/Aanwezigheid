@@ -1,10 +1,10 @@
 // Laad klassen
 async function loadClasses() {
-  const { data: classes, error } = await supabase
-    .from("classes")
-    .select("*")
-    .order("dancestyle")
-    .order("level");
+const { data: classes, error } = await supabase
+  .from("classes")
+  .select("id, dancestyle, level, day, start_time, end_time, active, seasons(name)")
+  .order("dancestyle")
+  .order("level");
 
   if (error) {
     console.error("Error loading classes:", error.message);
@@ -28,6 +28,7 @@ async function loadClasses() {
       <td>${cls.day}</td>
       <td>${cls.start_time?.slice(0, 5) || ''}</td>
       <td>${cls.end_time?.slice(0, 5) || ''}</td>
+      <td>${cls.seasons?.name || '-'}</td>
       <td>
         <input type="checkbox" data-id="${cls.id}" ${isActive ? "checked" : ""} />
       </td>
