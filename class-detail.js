@@ -4,7 +4,7 @@ const classId = urlParams.get("class_id");
 if (!classId) {
   alert("Geen klas geselecteerd. Selecteer eerst een klas.");
 } else {
-  loadClassDetails(classId);        // 🔹 Nieuw toegevoegd
+  loadClassDetails(classId);
   loadAttendingStudents(classId);
 }
 
@@ -40,7 +40,7 @@ async function loadClassDetails(classId) {
 
 async function loadAttendingStudents(classId) {
   try {
-    // ✅ Eerst de locked_lessons ophalen
+    // ✅ Locked lessen ophalen
     const { data: lockedLessons, error: lockError } = await supabase
       .from("locked_lessons")
       .select("lesson_number")
@@ -54,7 +54,7 @@ async function loadAttendingStudents(classId) {
 
     const lockedSet = new Set((lockedLessons || []).map(l => l.lesson_number));
 
-    // 🔽 Daarna studentgegevens ophalen
+    // ✅ Studenten ophalen
     const { data: studentLinks, error } = await supabase
       .from("student_classes")
       .select("id, students (id, firstname, lastname, geslacht)")
@@ -77,6 +77,7 @@ async function loadAttendingStudents(classId) {
       const student = link.students;
       const studentClassId = link.id;
 
+      // ✅ Aanwezigheid ophalen
       const { data: aanwezigheid, error: attError } = await supabase
         .from("attendance")
         .select("lesson_number, aanwezig")
@@ -89,6 +90,7 @@ async function loadAttendingStudents(classId) {
         });
       }
 
+      // ✅ Rij maken
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${student.firstname}</td>
@@ -102,12 +104,13 @@ async function loadAttendingStudents(classId) {
         checkbox.type = "checkbox";
         checkbox.checked = aanwezigMap[i] === true;
 
-        // ✅ Lock check
+        // ✅ Vergrendelde checkbox blokkeren
         if (lockedSet.has(i)) {
           checkbox.disabled = true;
           checkbox.title = "Deze les is vergrendeld";
         }
 
+        // ✅ Opslaan bij wijziging
         checkbox.addEventListener("change", async () => {
           if (lockedSet.has(i)) return; // extra safeguard
 
@@ -136,8 +139,6 @@ async function loadAttendingStudents(classId) {
     alert("Onverwachte fout: " + err.message);
   }
 }
-
-
 
 async function saveAttendance(studentClassId, lessonNumber, aanwezig) {
   const { data: existing, error: fetchError } = await supabase
