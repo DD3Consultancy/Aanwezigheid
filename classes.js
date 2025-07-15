@@ -15,14 +15,12 @@ async function loadSeasons() {
 
   seasons = data || [];
 
-  const select = document.createElement("select");
-  select.name = "season_id";
-  select.required = true;
-
+  const select = document.getElementById("season-select");
   select.innerHTML = `
-    <option value="" disabled selected>Seizoen</option>
+    <option value="" disabled selected>Select Season</option>
     ${seasons.map(s => `<option value="${s.id}">${s.name}</option>`).join("")}
   `;
+}
 
   const form = document.getElementById("class-form");
   form.insertBefore(select, document.getElementById("submit-button"));
