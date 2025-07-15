@@ -6,6 +6,7 @@ if (!classId) {
 } else {
   loadClassDetails(classId);
   loadAttendingStudents(classId);
+  loadLockControls(classId); // ✅ Toegevoegd
 }
 
 async function loadClassDetails(classId) {
@@ -40,7 +41,6 @@ async function loadClassDetails(classId) {
 
 async function loadAttendingStudents(classId) {
   try {
-    // ✅ Locked lessen ophalen
     const { data: lockedLessons, error: lockError } = await supabase
       .from("locked_lessons")
       .select("lesson_number")
@@ -54,7 +54,6 @@ async function loadAttendingStudents(classId) {
 
     const lockedSet = new Set((lockedLessons || []).map(l => l.lesson_number));
 
-    // ✅ Studenten ophalen
     const { data: studentLinks, error } = await supabase
       .from("student_classes")
       .select("id, students (id, firstname, lastname, geslacht)")
@@ -77,7 +76,6 @@ async function loadAttendingStudents(classId) {
       const student = link.students;
       const studentClassId = link.id;
 
-      // ✅ Aanwezigheid ophalen
       const { data: aanwezigheid, error: attError } = await supabase
         .from("attendance")
         .select("lesson_number, aanwezig")
@@ -90,7 +88,6 @@ async function loadAttendingStudents(classId) {
         });
       }
 
-      // ✅ Rij maken
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${student.firstname}</td>
@@ -104,15 +101,13 @@ async function loadAttendingStudents(classId) {
         checkbox.type = "checkbox";
         checkbox.checked = aanwezigMap[i] === true;
 
-        // ✅ Vergrendelde checkbox blokkeren
         if (lockedSet.has(i)) {
           checkbox.disabled = true;
           checkbox.title = "Deze les is vergrendeld";
         }
 
-        // ✅ Opslaan bij wijziging
         checkbox.addEventListener("change", async () => {
-          if (lockedSet.has(i)) return; // extra safeguard
+          if (lockedSet.has(i)) return;
 
           checkbox.disabled = true;
           checkbox.title = "Opslaan...";
@@ -163,5 +158,74 @@ async function saveAttendance(studentClassId, lessonNumber, aanwezig) {
       .insert([{ student_class_id: studentClassId, lesson_number: lessonNumber, aanwezig }]);
 
     if (insertError) throw insertError;
+  }
+}
+
+// ✅ Nieuw: Lessen vergrendelen of ontgrendelen
+async function loadLockControls(classId) {
+  const container = document.getElementById("lock-controls");
+  container.innerHTML = "";
+
+  for (let i = 1; i <= 12; i++) {
+    const label = document.createElement("label");
+    label.style.marginRight = "1rem";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.dataset.lessonNumber = i;
+
+    const { data, error } = await supabase
+      .from("locked_lessons")
+      .select("locked")
+      .eq("class_id", classId)
+      .eq("lesson_number", i)
+      .maybeSingle();
+
+    if (data?.locked === true) {
+      checkbox.checked = true;
+    }
+
+    checkbox.addEventListener("change", async () => {
+      const locked = checkbox.checked;
+
+      const { data: existing, error: findError } = await supabase
+        .from("locked_lessons")
+        .select("id")
+        .eq("class_id", classId)
+        .eq("lesson_number", i)
+        .maybeSingle();
+
+      if (findError) {
+        alert("Fout bij zoeken naar bestaande lock: " + findError.message);
+        return;
+      }
+
+      if (existing) {
+        const { error: updateError } = await supabase
+          .from("locked_lessons")
+          .update({ locked })
+          .eq("id", existing.id);
+
+        if (updateError) {
+          alert("Fout bij bijwerken lock: " + updateError.message);
+          checkbox.checked = !locked;
+        }
+      } else {
+        const { error: insertError } = await supabase
+          .from("locked_lessons")
+          .insert([{ class_id: classId, lesson_number: i, locked }]);
+
+        if (insertError) {
+          alert("Fout bij aanmaken lock: " + insertError.message);
+          checkbox.checked = !locked;
+        }
+      }
+
+      loadAttendingStudents(classId); // Refresh checkboxes
+    });
+
+    label.appendChild(checkbox);
+    label.append(` Les ${i}`);
+    container.appendChild(label);
   }
 }
