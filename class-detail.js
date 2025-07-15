@@ -6,7 +6,7 @@ if (!classId) {
 } else {
   loadClassDetails(classId);
   loadAttendingStudents(classId);
-  loadLockControls(classId); // ✅ Toegevoegd
+  renderLockButtons(classId); // Nieuwe functie die slotjes in header zet
 }
 
 async function loadClassDetails(classId) {
@@ -41,6 +41,7 @@ async function loadClassDetails(classId) {
 
 async function loadAttendingStudents(classId) {
   try {
+    // Haal locked lessen op
     const { data: lockedLessons, error: lockError } = await supabase
       .from("locked_lessons")
       .select("lesson_number")
@@ -161,71 +162,83 @@ async function saveAttendance(studentClassId, lessonNumber, aanwezig) {
   }
 }
 
-// ✅ Nieuw: Lessen vergrendelen of ontgrendelen
-async function loadLockControls(classId) {
-  const container = document.getElementById("lock-controls");
-  container.innerHTML = "";
+// Nieuwe functie: rendert slotjes in de header van de tabel (naast lesnummers)
+async function renderLockButtons(classId) {
+  // Eerst lock-status ophalen
+  const { data: lockedLessons, error } = await supabase
+    .from("locked_lessons")
+    .select("lesson_number, locked")
+    .eq("class_id", classId);
 
-  for (let i = 1; i <= 12; i++) {
-    const label = document.createElement("label");
-    label.style.marginRight = "1rem";
+  if (error) {
+    console.error("Fout bij ophalen locked lessons:", error.message);
+    return;
+  }
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.dataset.lessonNumber = i;
+  // Map maken van lesnummer => locked (true/false)
+  const lockMap = new Map();
+  (lockedLessons || []).forEach(ll => {
+    lockMap.set(ll.lesson_number, ll.locked);
+  });
 
-    const { data, error } = await supabase
-      .from("locked_lessons")
-      .select("locked")
-      .eq("class_id", classId)
-      .eq("lesson_number", i)
-      .maybeSingle();
+  // Selecteer alle <th> met data-lesson attribuut in de header
+  document.querySelectorAll("#students-table thead tr:nth-child(2) th[data-lesson]").forEach(th => {
+    const lessonNum = Number(th.dataset.lesson);
+    const locked = lockMap.get(lessonNum) === true;
 
-    if (data?.locked === true) {
-      checkbox.checked = true;
+    // Slotje knop maken/aanpassen
+    let btn = th.querySelector("button.lock-toggle");
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.className = "lock-toggle";
+      btn.style.marginLeft = "5px";
+      th.appendChild(btn);
     }
 
-    checkbox.addEventListener("change", async () => {
-      const locked = checkbox.checked;
+    btn.textContent = locked ? "🔒" : "🔓";
+    btn.title = locked ? "Les is vergrendeld, klik om te ontgrendelen" : "Les is ontgrendeld, klik om te vergrendelen";
 
+    // Klik event om lock-status te toggelen
+    btn.onclick = async () => {
+      const newLockedStatus = !locked;
+
+      // Check of lock al bestaat
       const { data: existing, error: findError } = await supabase
         .from("locked_lessons")
         .select("id")
         .eq("class_id", classId)
-        .eq("lesson_number", i)
+        .eq("lesson_number", lessonNum)
         .maybeSingle();
 
       if (findError) {
-        alert("Fout bij zoeken naar bestaande lock: " + findError.message);
+        alert("Fout bij zoeken lock: " + findError.message);
         return;
       }
 
       if (existing) {
         const { error: updateError } = await supabase
           .from("locked_lessons")
-          .update({ locked })
+          .update({ locked: newLockedStatus })
           .eq("id", existing.id);
 
         if (updateError) {
-          alert("Fout bij bijwerken lock: " + updateError.message);
-          checkbox.checked = !locked;
+          alert("Fout bij updaten lock: " + updateError.message);
+          return;
         }
       } else {
         const { error: insertError } = await supabase
           .from("locked_lessons")
-          .insert([{ class_id: classId, lesson_number: i, locked }]);
+          .insert([{ class_id: classId, lesson_number: lessonNum, locked: newLockedStatus }]);
 
         if (insertError) {
-          alert("Fout bij aanmaken lock: " + insertError.message);
-          checkbox.checked = !locked;
+          alert("Fout bij toevoegen lock: " + insertError.message);
+          return;
         }
       }
 
-      loadAttendingStudents(classId); // Refresh checkboxes
-    });
-
-    label.appendChild(checkbox);
-    label.append(` Les ${i}`);
-    container.appendChild(label);
-  }
+      // Herlaad slotjes en studenten om UI actueel te houden
+      renderLockButtons(classId);
+      loadAttendingStudents(classId);
+    };
+  });
 }
