@@ -40,6 +40,21 @@ async function loadClassDetails(classId) {
 
 async function loadAttendingStudents(classId) {
   try {
+    // ✅ Eerst de locked_lessons ophalen
+    const { data: lockedLessons, error: lockError } = await supabase
+      .from("locked_lessons")
+      .select("lesson_number")
+      .eq("class_id", classId)
+      .eq("locked", true);
+
+    if (lockError) {
+      console.error("Fout bij ophalen locked_lessons:", lockError.message);
+      return;
+    }
+
+    const lockedSet = new Set((lockedLessons || []).map(l => l.lesson_number));
+
+    // 🔽 Daarna studentgegevens ophalen
     const { data: studentLinks, error } = await supabase
       .from("student_classes")
       .select("id, students (id, firstname, lastname, geslacht)")
@@ -48,16 +63,6 @@ async function loadAttendingStudents(classId) {
     if (error) {
       alert("Fout bij laden studenten: " + error.message);
       return;
-    }
-
-    // Tel mannen en vrouwen
-    const aantalMannen = studentLinks.filter(s => s.students.geslacht === "Man").length;
-    const aantalVrouwen = studentLinks.filter(s => s.students.geslacht === "Vrouw").length;
-
-    // Toon het aantal mannen en vrouwen
-    const genderCountDiv = document.getElementById("gender-count");
-    if (genderCountDiv) {
-      genderCountDiv.textContent = `Mannen: ${aantalMannen} - Vrouwen: ${aantalVrouwen}`;
     }
 
     const tbody = document.querySelector("#students-table tbody");
@@ -97,7 +102,15 @@ async function loadAttendingStudents(classId) {
         checkbox.type = "checkbox";
         checkbox.checked = aanwezigMap[i] === true;
 
+        // ✅ Lock check
+        if (lockedSet.has(i)) {
+          checkbox.disabled = true;
+          checkbox.title = "Deze les is vergrendeld";
+        }
+
         checkbox.addEventListener("change", async () => {
+          if (lockedSet.has(i)) return; // extra safeguard
+
           checkbox.disabled = true;
           checkbox.title = "Opslaan...";
 
@@ -123,6 +136,7 @@ async function loadAttendingStudents(classId) {
     alert("Onverwachte fout: " + err.message);
   }
 }
+
 
 
 async function saveAttendance(studentClassId, lessonNumber, aanwezig) {
