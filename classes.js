@@ -1,7 +1,7 @@
 let editingClassId = null;
 let seasons = [];
 
-// 🔁 Haal seizoenen op en toon dropdown
+// 🔁 Haal seizoenen op en vul de bestaande <select id="season-select">
 async function loadSeasons() {
   const { data, error } = await supabase
     .from("seasons")
@@ -15,24 +15,18 @@ async function loadSeasons() {
 
   seasons = data || [];
 
-  const select = document.createElement("select");
-  select.name = "season_id";
-  select.required = true;
-
-  select.innerHTML = 
-    <option value="" disabled selected>Seizoen</option>
-    ${seasons.map(s => <option value="${s.id}">${s.name}</option>).join("")}
-  ;
-
-  const form = document.getElementById("class-form");
-  form.insertBefore(select, document.getElementById("submit-button"));
+  const select = document.getElementById("season-select");
+  select.innerHTML = `
+    <option value="" disabled selected>Select Season</option>
+    ${seasons.map(s => `<option value="${s.id}">${s.name}</option>`).join("")}
+  `;
 }
 
-// ✅ Klassen laden inclusief seizoen
+// ✅ Klassen laden inclusief seizoensnaam
 async function loadClasses() {
   const { data: classes, error } = await supabase
     .from("classes")
-    .select("id, dancestyle, level, day, start_time, end_time, active, season_id, seasons(name)")
+    .select("id, dancestyle, level, day, start_time, end_time, active, season_id, season(name)")
     .order("dancestyle")
     .order("level");
 
@@ -52,20 +46,20 @@ async function loadClasses() {
 
   const renderRow = (cls, isActive) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = 
+    tr.innerHTML = `
       <td>${cls.dancestyle}</td>
       <td>${cls.level}</td>
       <td>${cls.day}</td>
       <td>${cls.start_time?.slice(0, 5) || ''}</td>
       <td>${cls.end_time?.slice(0, 5) || ''}</td>
-      <td>${cls.seasons?.name || '-'}</td>
+      <td>${cls.season?.name || '-'}</td>
       <td>
         <input type="checkbox" data-id="${cls.id}" ${isActive ? "checked" : ""} />
       </td>
       <td>
         <button class="edit-button" data-id="${cls.id}">✏️</button>
       </td>
-    ;
+    `;
     return tr;
   };
 
@@ -73,7 +67,7 @@ async function loadClasses() {
   inactiveClasses.forEach(cls => inactiveTbody.appendChild(renderRow(cls, false)));
 }
 
-// ✅ Active toggle
+// 🔄 Toggle active status
 document.body.addEventListener("change", async (e) => {
   if (e.target.type === "checkbox" && e.target.dataset.id) {
     const classId = e.target.dataset.id;
