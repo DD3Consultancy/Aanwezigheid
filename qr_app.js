@@ -1,4 +1,6 @@
 async function loadStudentInfo(studentNumber) {
+  console.log("Start loadStudentInfo met studentNumber:", studentNumber);
+
   // 1. Haal student info op
   const { data: student, error: studentError } = await supabase
     .from("students")
@@ -6,6 +8,7 @@ async function loadStudentInfo(studentNumber) {
     .eq("student_number", studentNumber)
     .single();
 
+  console.log("Student data:", student, "Error:", studentError);
   if (studentError || !student) {
     studentInfoDiv.textContent = "Student niet gevonden.";
     return;
@@ -20,6 +23,7 @@ async function loadStudentInfo(studentNumber) {
     .eq("active", true)
     .order("dancestyle");
 
+  console.log("Classes data:", classes, "Error:", classError);
   if (classError || !classes) {
     classSelect.innerHTML = `<option>Geen klassen gevonden</option>`;
     return;
@@ -31,11 +35,13 @@ async function loadStudentInfo(studentNumber) {
 
   attendanceForm.style.display = "block";
 
-  // 3. Bij formulier submit: maak student_classes aan als die nog niet bestaat en registreer aanwezigheid
+  // 3. Form submit handler
   attendanceForm.onsubmit = async (e) => {
     e.preventDefault();
     const classId = classSelect.value;
     const lessonNumber = parseInt(document.getElementById("lesson-number").value);
+
+    console.log("Form submitted with classId:", classId, "lessonNumber:", lessonNumber);
 
     // Check of student_classes record al bestaat
     let { data: scData, error: scError } = await supabase
@@ -45,18 +51,22 @@ async function loadStudentInfo(studentNumber) {
       .eq("class_id", classId)
       .single();
 
-    if (scError && scError.code !== "PGRST116") { // PGRST116 = no rows found
+    console.log("Student_classes data:", scData, "Error:", scError);
+
+    if (scError && scError.code !== "PGRST116") {
       statusDiv.textContent = "❌ Fout bij zoeken student_class: " + scError.message;
       return;
     }
 
-    // Als niet gevonden, maak een nieuw student_classes record aan
+    // Als niet gevonden, maak nieuwe aan
     if (!scData) {
       const { data: newScData, error: insertScError } = await supabase
         .from("student_classes")
         .insert([{ student_id: student.id, class_id: classId }])
         .select("id")
         .single();
+
+      console.log("New student_class insert:", newScData, "Error:", insertScError);
 
       if (insertScError) {
         statusDiv.textContent = "❌ Fout bij aanmaken student_class: " + insertScError.message;
