@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dance Attendance App</title>
+
+  <!-- Supabase JS client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="supabaseClient.js"></script>
+  <script defer src="qr_app.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; padding: 1em; max-width: 400px; margin: auto; }
+    label { display: block; margin-top: 1em; }
+    select, input, button { width: 100%; padding: 0.5em; margin-top: 0.5em; }
+    #status { margin-top: 1em; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>QR Aanwezigheid</h2>
+  <div id="student-info">Studentgegevens laden...</div>
+
+  <form id="attendance-form" style="display:none;">
+    <label for="class-select">Kies klas:</label>
+    <select id="class-select" required></select>
+
+    <label for="lesson-number">Lesnummer:</label>
+    <input type="number" id="lesson-number" min="1" required />
+
+    <button type="submit">Aanwezigheid registreren</button>
+  </form>
+
+  <div id="status"></div>
+</body>
+</html>
