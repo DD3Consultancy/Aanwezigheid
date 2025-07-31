@@ -2,6 +2,7 @@ const studentInfoDiv = document.getElementById("student-info");
 const attendanceForm = document.getElementById("attendance-form");
 const classSelect = document.getElementById("class-select");
 const statusDiv = document.getElementById("status");
+const lessonOverviewDiv = document.getElementById("lesson-overview");
 
 let currentStudent = null;
 
@@ -14,7 +15,6 @@ async function loadStudentInfo(studentNumber) {
     .eq("student_number", studentNumber)
     .single();
 
-  console.log("Student data:", student, "Error:", studentError);
   if (studentError || !student) {
     studentInfoDiv.textContent = "Student niet gevonden.";
     return;
@@ -36,21 +36,36 @@ async function loadStudentClasses(studentId) {
     .select("class_id, classes(id, dancestyle, level, day)")
     .eq("student_id", studentId);
 
-  if (error || !studentClasses) {
-    classSelect.innerHTML = `<option>Geen klassen gevonden</option>`;
+  classSelect.innerHTML = "";
+
+  // Voeg lege optie toe
+  const emptyOption = document.createElement("option");
+  emptyOption.value = "";
+  emptyOption.textContent = "-- Kies een klas --";
+  classSelect.appendChild(emptyOption);
+
+  if (error || !studentClasses || studentClasses.length === 0) {
+    const option = document.createElement("option");
+    option.textContent = "Geen klassen gevonden";
+    option.disabled = true;
+    classSelect.appendChild(option);
     return;
   }
 
-  classSelect.innerHTML = studentClasses.map(sc =>
-    `<option value="${sc.class_id}">${sc.classes.dancestyle} ${sc.classes.level} (${sc.classes.day})</option>`
-  ).join("");
+  studentClasses.forEach(sc => {
+    const option = document.createElement("option");
+    option.value = sc.class_id;
+    option.textContent = `${sc.classes.dancestyle} ${sc.classes.level} (${sc.classes.day})`;
+    classSelect.appendChild(option);
+  });
 
   attendanceForm.style.display = "block";
 }
 
 classSelect.addEventListener("change", async () => {
   const classId = classSelect.value;
-  const lessonOverviewDiv = document.getElementById("lesson-overview");
+  lessonOverviewDiv.innerHTML = "";
+
   if (!classId) return;
 
   const { data: studentClass, error: scError } = await supabase
@@ -60,7 +75,7 @@ classSelect.addEventListener("change", async () => {
     .eq("class_id", classId)
     .single();
 
-  if (scError) {
+  if (scError || !studentClass) {
     lessonOverviewDiv.innerHTML = `<p>Kan student_class niet ophalen.</p>`;
     return;
   }
@@ -82,7 +97,9 @@ classSelect.addEventListener("change", async () => {
 
   let html = "<h4>Aanwezigheidsoverzicht</h4><ul>";
   for (let i = 1; i <= 12; i++) {
-    const status = presenceMap[i] === true ? "✅ Aanwezig" : presenceMap[i] === false ? "❌ Afwezig" : "⏳ Niet geregistreerd";
+    const status = presenceMap[i] === true ? "✅ Aanwezig" :
+                   presenceMap[i] === false ? "❌ Afwezig" :
+                   "⏳ Niet geregistreerd";
     html += `<li>Les ${i}: ${status}</li>`;
   }
   html += "</ul>";
@@ -93,6 +110,11 @@ attendanceForm.onsubmit = async (e) => {
   e.preventDefault();
   const classId = classSelect.value;
   const lessonNumber = parseInt(document.getElementById("lesson-number").value);
+
+  if (!classId || !lessonNumber) {
+    statusDiv.textContent = "❌ Kies een klas en vul een lesnummer in.";
+    return;
+  }
 
   const { data: scData, error: scError } = await supabase
     .from("student_classes")
@@ -133,7 +155,7 @@ attendanceForm.onsubmit = async (e) => {
     statusDiv.textContent = "❌ Fout bij registreren aanwezigheid: " + insertAttendanceError.message;
   } else {
     statusDiv.textContent = "✅ Aanwezigheid geregistreerd!";
-    classSelect.dispatchEvent(new Event("change")); // Refresh overzicht
+    classSelect.dispatchEvent(new Event("change")); // Herlaad overzicht
   }
 };
 
