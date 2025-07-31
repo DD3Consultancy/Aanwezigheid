@@ -3,20 +3,20 @@ const classSelect = document.getElementById("class-select");
 const attendanceForm = document.getElementById("attendance-form");
 const statusDiv = document.getElementById("status");
 
-const studentId = new URLSearchParams(window.location.search).get("student");
+const studentNumber = new URLSearchParams(window.location.search).get("student");
 
-if (!studentId) {
+if (!studentNumber) {
   studentInfoDiv.textContent = "Geen studentnummer gevonden in QR-code.";
 } else {
-  loadStudentInfo(studentId);
+  loadStudentInfo(parseInt(studentNumber)); // Zet om naar getal indien nodig
 }
 
 async function loadStudentInfo(studentNumber) {
-  // Zoek student_class_id en student info
+  // Zoek student_class_id en student info op basis van student_number
   const { data, error } = await supabase
     .from("student_class")
-    .select("id, student(firstname, lastname)")
-    .eq("student_id", studentNumber)
+    .select("id, student(firstname, lastname, student_number)")
+    .eq("student.student_number", studentNumber)
     .single();
 
   if (error || !data) {
@@ -26,7 +26,7 @@ async function loadStudentInfo(studentNumber) {
 
   const student = data.student;
   const studentClassId = data.id;
-  studentInfoDiv.innerHTML = `<strong>${student.firstname} ${student.lastname}</strong><br>Studentnummer: ${studentNumber}`;
+  studentInfoDiv.innerHTML = `<strong>${student.firstname} ${student.lastname}</strong><br>Studentnummer: ${student.student_number}`;
 
   // Klassen ophalen
   const { data: classes, error: classError } = await supabase
