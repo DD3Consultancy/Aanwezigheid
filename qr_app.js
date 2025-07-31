@@ -20,9 +20,11 @@ async function loadStudentInfo(studentNumber) {
     .single();
 
   if (error || !data) {
-    studentInfoDiv.textContent = "Student niet gevonden.";
-    return;
-  }
+  console.error("Supabase error:", error);
+  console.log("Gekregen data:", data);
+  studentInfoDiv.textContent = "Student niet gevonden.";
+  return;
+}
 
   const student = data.student;
   const studentClassId = data.id;
