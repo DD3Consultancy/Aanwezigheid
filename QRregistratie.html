@@ -11,28 +11,122 @@
   <script defer src="qr_app.js"></script>
 
   <style>
-    body { font-family: Arial, sans-serif; padding: 1em; max-width: 400px; margin: auto; }
-    label { display: block; margin-top: 1em; }
-    select, input, button { width: 100%; padding: 0.5em; margin-top: 0.5em; }
-    #status { margin-top: 1em; font-weight: bold; }
-  </style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    max-width: 500px;
+    margin: auto;
+    background-color: #f9f9f9;
+    color: #333;
+  }
+
+  nav {
+    background-color: #333;
+    padding: 1em;
+    text-align: center;
+  }
+
+  nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 1em;
+    font-weight: bold;
+  }
+
+  nav a:hover {
+    text-decoration: underline;
+  }
+
+  main {
+    padding: 1.5em;
+  }
+
+  h2 {
+    text-align: center;
+    color: #222;
+    margin-top: 0;
+  }
+
+  label {
+    display: block;
+    margin-top: 1.5em;
+    font-weight: bold;
+  }
+
+  select,
+  input,
+  button {
+    width: 100%;
+    padding: 0.6em;
+    margin-top: 0.5em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 1em;
+  }
+
+  button {
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    border: none;
+  }
+
+  button:hover {
+    background-color: #0056b3;
+  }
+
+  #status {
+    margin-top: 1.5em;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  #lesson-overview {
+    margin-top: 2em;
+    background-color: #fff;
+    padding: 1em;
+    border-radius: 6px;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+  }
+
+  #lesson-overview ul {
+    padding-left: 1.2em;
+  }
+
+  #lesson-overview li {
+    margin-bottom: 0.5em;
+  }
+</style>
+
 </head>
 <body>
-  <h2>QR Aanwezigheid</h2>
-  <div id="student-info">Studentgegevens laden...</div>
+  <nav style="background-color: #333; padding: 1em; color: white;">
+    <a href="index.html" style="color:white; margin-right: 1em;">Home</a>
+    <a href="class-detail.html" style="color:white; margin-right: 1em;">Klasdetail</a>
+    <a href="QRregistratie.html" style="color:white;">Aanwezigheid</a>
+  </nav>
 
-  <form id="attendance-form" style="display:none;">
-   
-    <label for="class-select">Kies klas:</label>
-    <select id="class-select" required></select>
+ <main>
+    <h2>QR Aanwezigheid</h2>
+    <div id="student-info">Studentgegevens laden...</div>
 
-    <label for="lesson-number">Lesnummer:</label>
-    <input type="number" id="lesson-number" min="1" required />
+    <form id="attendance-form" style="display:none;">
+      <label for="class-select">Kies klas:</label>
+      <select id="class-select" required>
+        <option value="">-- Selecteer een klas --</option>
+      </select>
 
-    <button type="submit">Aanwezigheid registreren</button>
-  </form>
-   <div id="lesson-overview" style="margin-top: 2em;"></div>
+      <label for="lesson-number">Lesnummer:</label>
+      <input type="number" id="lesson-number" min="1" required />
 
-  <div id="status"></div>
+      <button type="submit">Aanwezigheid registreren</button>
+    </form>
+
+    <div id="lesson-overview"></div>
+    <div id="status"></div>
+  </main>
 </body>
+
 </html>
