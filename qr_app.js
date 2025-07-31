@@ -118,7 +118,7 @@ async function loadStudentInfo(studentNumber) {
       .insert([{
         student_class_id: scData.id,
         lesson_number: lessonNumber,
-        aanwezigheid: true
+        aanwezig: true
       }]);
 
     if (insertAttendanceError) {
