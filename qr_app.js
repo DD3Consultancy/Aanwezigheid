@@ -14,10 +14,10 @@ if (!studentNumber) {
 async function loadStudentInfo(studentNumber) {
   // Zoek student_class_id op basis van student_number
   const { data, error } = await supabase
-    .from("student_classes")
-    .select("id, student(firstname, lastname, student_number)")
-    .eq("student.student_number", studentNumber)
-    .single();
+  .from("student_classes")
+  .select("id, student(firstname, lastname, student_number)")
+  .eq("student.student_number", studentNumber)
+  .single();
 
   if (error || !data) {
   console.error("Supabase error:", error);
