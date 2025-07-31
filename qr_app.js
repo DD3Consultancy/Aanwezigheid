@@ -19,7 +19,7 @@ if (!studentNumber) {
 async function loadStudentInfo(studentNumber) {
   console.log("loadStudentInfo gestart met:", studentNumber);
 
-  // Haal student info op
+  // 1. Haal student info op
   const { data: student, error: studentError } = await supabase
     .from("students")
     .select("id, firstname, lastname, student_number")
@@ -35,14 +35,31 @@ async function loadStudentInfo(studentNumber) {
 
   studentInfoDiv.innerHTML = `<strong>${student.firstname} ${student.lastname}</strong><br>Studentnummer: ${student.student_number}`;
 
-  // Haal actieve klassen op
+  // 2. Haal alle class_id's waar de student in zit
+  const { data: studentClasses, error: scError } = await supabase
+    .from("student_classes")
+    .select("class_id")
+    .eq("student_id", student.id);
+
+  if (scError) {
+    statusDiv.textContent = "❌ Fout bij ophalen klassen van student: " + scError.message;
+    return;
+  }
+
+  const classIds = studentClasses.map(sc => sc.class_id);
+
+  if (classIds.length === 0) {
+    classSelect.innerHTML = `<option>Geen klassen gevonden</option>`;
+    return;
+  }
+
+  // 3. Haal de klassen info op van die class_id's en die actief zijn
   const { data: classes, error: classError } = await supabase
     .from("classes")
     .select("id, dancestyle, level, day")
+    .in("id", classIds)
     .eq("active", true)
     .order("dancestyle");
-
-  console.log("Classes data:", classes, "Error:", classError);
 
   if (classError || !classes || classes.length === 0) {
     classSelect.innerHTML = `<option>Geen klassen gevonden</option>`;
@@ -55,6 +72,7 @@ async function loadStudentInfo(studentNumber) {
 
   attendanceForm.style.display = "block";
 
+  // 4. Formulier submit handler
   attendanceForm.onsubmit = async (e) => {
     e.preventDefault();
     statusDiv.textContent = "";
@@ -64,22 +82,23 @@ async function loadStudentInfo(studentNumber) {
 
     console.log("Form submitted met classId:", classId, "lesnummer:", lessonNumber);
 
-    // Check student_class record
-    let { data: scData, error: scError } = await supabase
+    // Check of er al een student_class bestaat voor deze student en klas
+    let { data: scData, error: scError2 } = await supabase
       .from("student_classes")
       .select("id")
       .eq("student_id", student.id)
       .eq("class_id", classId)
       .single();
 
-    console.log("student_classes data:", scData, "Error:", scError);
+    console.log("student_classes data:", scData, "Error:", scError2);
 
-    if (scError && scError.code !== "PGRST116") {
-      statusDiv.textContent = "❌ Fout bij zoeken student_class: " + scError.message;
+    if (scError2 && scError2.code !== "PGRST116") {
+      statusDiv.textContent = "❌ Fout bij zoeken student_class: " + scError2.message;
       return;
     }
 
     if (!scData) {
+      // Maak nieuwe student_class aan als die niet bestaat
       const { data: newScData, error: insertScError } = await supabase
         .from("student_classes")
         .insert([{ student_id: student.id, class_id: classId }])
@@ -93,7 +112,7 @@ async function loadStudentInfo(studentNumber) {
       scData = newScData;
     }
 
-    // Aanwezigheid registreren
+    // Registreer aanwezigheid in de attendance tabel
     const { error: insertAttendanceError } = await supabase
       .from("attendance")
       .insert([{
