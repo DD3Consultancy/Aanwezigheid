@@ -1,36 +1,19 @@
-const studentInfoDiv = document.getElementById("student-info");
-const classSelect = document.getElementById("class-select");
-const attendanceForm = document.getElementById("attendance-form");
-const statusDiv = document.getElementById("status");
-
-const studentNumber = new URLSearchParams(window.location.search).get("student");
-
-if (!studentNumber) {
-  studentInfoDiv.textContent = "Geen studentnummer gevonden in QR-code.";
-} else {
-  loadStudentInfo(parseInt(studentNumber));
-}
-
 async function loadStudentInfo(studentNumber) {
-  // Zoek student_class_id op basis van student_number
-  const { data, error } = await supabase
-  .from("student_classes")
-  .select("id, student(firstname, lastname, student_number)")
-  .eq("student.student_number", studentNumber)
-  .single();
+  // 1. Haal student info op
+  const { data: student, error: studentError } = await supabase
+    .from("students")
+    .select("id, firstname, lastname, student_number")
+    .eq("student_number", studentNumber)
+    .single();
 
-  if (error || !data) {
-  console.error("Supabase error:", error);
-  console.log("Gekregen data:", data);
-  studentInfoDiv.textContent = "Student niet gevonden.";
-  return;
-}
+  if (studentError || !student) {
+    studentInfoDiv.textContent = "Student niet gevonden.";
+    return;
+  }
 
-  const student = data.student;
-  const studentClassId = data.id;
   studentInfoDiv.innerHTML = `<strong>${student.firstname} ${student.lastname}</strong><br>Studentnummer: ${student.student_number}`;
 
-  // Klassen ophalen
+  // 2. Haal alle actieve klassen
   const { data: classes, error: classError } = await supabase
     .from("classes")
     .select("id, dancestyle, level, day")
@@ -48,10 +31,53 @@ async function loadStudentInfo(studentNumber) {
 
   attendanceForm.style.display = "block";
 
+  // 3. Bij formulier submit: maak student_classes aan als die nog niet bestaat en registreer aanwezigheid
   attendanceForm.onsubmit = async (e) => {
     e.preventDefault();
     const classId = classSelect.value;
-    const lessonNumber = document.getElementById("lesson-number").value;
+    const lessonNumber = parseInt(document.getElementById("lesson-number").value);
 
-    const { error: insertError } = await supabase.from("attendance").insert([{
-      stude
+    // Check of student_classes record al bestaat
+    let { data: scData, error: scError } = await supabase
+      .from("student_classes")
+      .select("id")
+      .eq("student_id", student.id)
+      .eq("class_id", classId)
+      .single();
+
+    if (scError && scError.code !== "PGRST116") { // PGRST116 = no rows found
+      statusDiv.textContent = "❌ Fout bij zoeken student_class: " + scError.message;
+      return;
+    }
+
+    // Als niet gevonden, maak een nieuw student_classes record aan
+    if (!scData) {
+      const { data: newScData, error: insertScError } = await supabase
+        .from("student_classes")
+        .insert([{ student_id: student.id, class_id: classId }])
+        .select("id")
+        .single();
+
+      if (insertScError) {
+        statusDiv.textContent = "❌ Fout bij aanmaken student_class: " + insertScError.message;
+        return;
+      }
+      scData = newScData;
+    }
+
+    // Registreer aanwezigheid
+    const { error: insertAttendanceError } = await supabase
+      .from("attendance")
+      .insert([{
+        student_class_id: scData.id,
+        lesson_number: lessonNumber,
+        aanwezigheid: true
+      }]);
+
+    if (insertAttendanceError) {
+      statusDiv.textContent = "❌ Fout bij registreren aanwezigheid: " + insertAttendanceError.message;
+    } else {
+      statusDiv.textContent = "✅ Aanwezigheid geregistreerd!";
+    }
+  };
+}
