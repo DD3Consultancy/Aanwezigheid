@@ -8,13 +8,13 @@ const studentNumber = new URLSearchParams(window.location.search).get("student")
 if (!studentNumber) {
   studentInfoDiv.textContent = "Geen studentnummer gevonden in QR-code.";
 } else {
-  loadStudentInfo(parseInt(studentNumber)); // Zet om naar getal indien nodig
+  loadStudentInfo(parseInt(studentNumber));
 }
 
 async function loadStudentInfo(studentNumber) {
-  // Zoek student_class_id en student info op basis van student_number
+  // Zoek student_class_id op basis van student_number
   const { data, error } = await supabase
-    .from("student_class")
+    .from("student_classes")
     .select("id, student(firstname, lastname, student_number)")
     .eq("student.student_number", studentNumber)
     .single();
@@ -52,15 +52,4 @@ async function loadStudentInfo(studentNumber) {
     const lessonNumber = document.getElementById("lesson-number").value;
 
     const { error: insertError } = await supabase.from("attendance").insert([{
-      student_class_id: studentClassId,
-      lesson_number: parseInt(lessonNumber),
-      aanwezigheid: true
-    }]);
-
-    if (insertError) {
-      statusDiv.textContent = "❌ Fout bij registreren: " + insertError.message;
-    } else {
-      statusDiv.textContent = "✅ Aanwezigheid geregistreerd!";
-    }
-  };
-}
+      stude
