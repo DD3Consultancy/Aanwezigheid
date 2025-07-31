@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Scan QR for Attendance</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="supabaseClient.js"></script>
+</head>
+<body>
+  <h1>Scan QR Code</h1>
+  <div id="reader" style="width: 300px;"></div>
+  <div id="result"></div>
+
+  <script>
+    const html5QrCode = new Html5Qrcode("reader");
+
+    function onScanSuccess(decodedText, decodedResult) {
+      html5QrCode.stop(); // stop scanning after first result
+      document.getElementById("result").textContent = "Scanned: " + decodedText;
+
+      const studentId = new URLSearchParams(decodedText).get("student_id");
+      const classId = "some-class-id"; // of haal deze op uit de URL of selectie
+
+      if (studentId) {
+        supabase
+          .from("attendance")
+          .insert([{ student_id: studentId, class_id: classId, date: new Date().toISOString().split('T')[0] }])
+          .then(({ error }) => {
+            if (error) {
+              alert("Fout bij registreren aanwezigheid: " + error.message);
+            } else {
+              alert("Aanwezigheid geregistreerd!");
+            }
+          });
+      }
+    }
+
+    Html5Qrcode.getCameras().then(devices => {
+      if (devices && devices.length) {
+        html5QrCode.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+          },
+          onScanSuccess
+        );
+      }
+    });
+  </script>
+</body>
+</html>
