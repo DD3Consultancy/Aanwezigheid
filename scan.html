@@ -1,51 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Scan QR for Attendance</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scan QR-code</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
-  <script src="supabaseClient.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 1em; }
+    #reader { width: 100%; max-width: 400px; margin: auto; }
+    #status { margin-top: 1em; font-weight: bold; }
+  </style>
 </head>
 <body>
-  <h1>Scan QR Code</h1>
-  <div id="reader" style="width: 300px;"></div>
-  <div id="result"></div>
+  <h2>Scan de QR-code</h2>
+  <div id="reader"></div>
+  <div id="status"></div>
 
   <script>
-    const html5QrCode = new Html5Qrcode("reader");
+    const statusDiv = document.getElementById("status");
 
-    function onScanSuccess(decodedText, decodedResult) {
-      html5QrCode.stop(); // stop scanning after first result
-      document.getElementById("result").textContent = "Scanned: " + decodedText;
-
-      const studentId = new URLSearchParams(decodedText).get("student_id");
-      const classId = "some-class-id"; // of haal deze op uit de URL of selectie
-
-      if (studentId) {
-        supabase
-          .from("attendance")
-          .insert([{ student_id: studentId, class_id: classId, date: new Date().toISOString().split('T')[0] }])
-          .then(({ error }) => {
-            if (error) {
-              alert("Fout bij registreren aanwezigheid: " + error.message);
-            } else {
-              alert("Aanwezigheid geregistreerd!");
-            }
-          });
+    function onScanSuccess(qrCodeMessage) {
+      if (!/^\d+$/.test(qrCodeMessage)) {
+        statusDiv.textContent = "❌ Ongeldige QR-code: verwacht alleen een studentnummer.";
+        return;
       }
+
+      // Stop scanner na succesvolle scan
+      html5QrcodeScanner.clear().then(() => {
+        statusDiv.textContent = "✅ QR-code gescand. Doorschakelen...";
+        window.location.href = `QRregistratie.html?student=${qrCodeMessage}`;
+      }).catch(err => {
+        statusDiv.textContent = "❌ Fout bij stoppen scanner: " + err;
+      });
     }
 
-    Html5Qrcode.getCameras().then(devices => {
-      if (devices && devices.length) {
-        html5QrCode.start(
-          { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 }
-          },
-          onScanSuccess
-        );
-      }
-    });
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+      "reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess);
   </script>
 </body>
 </html>
