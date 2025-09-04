@@ -100,49 +100,49 @@
   }
 
   async function loadLinkedClasses() {
-    const { data, error } = await supabase
-      .from('student_classes')
-      .select(`id, classes(*)`)
-      .eq('student_id', studentId);
+  const { data, error } = await supabase
+    .from('student_classes')
+    .select(`id, classes:class_id(*)`)
+    .eq('student_id', studentId);
 
-    if (error) {
-      alert("Error loading linked classes: " + error.message);
-      return;
-    }
-
-    const tbody = document.querySelector('#linked-classes-table tbody');
-    tbody.innerHTML = '';
-
-    data.forEach(link => {
-      const cls = link.classes;
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${cls.dancestyle}</td>
-        <td>${cls.level}</td>
-        <td>${cls.day}</td>
-        <td>${cls.start_time?.slice(0,5) || ''}</td>
-        <td>${cls.end_time?.slice(0,5) || ''}</td>
-        <td><button data-link-id="${link.id}">Remove</button></td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    // Attach remove button listeners
-    tbody.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const linkId = btn.getAttribute('data-link-id');
-        const { error } = await supabase
-          .from('student_classes')
-          .delete()
-          .eq('id', linkId);
-        if (error) {
-          alert("Failed to remove class: " + error.message);
-          return;
-        }
-        loadLinkedClasses();
-      });
-    });
+  if (error) {
+    alert("Error loading linked classes: " + error.message);
+    return;
   }
+
+  const tbody = document.querySelector('#linked-classes-table tbody');
+  tbody.innerHTML = '';
+
+  data.forEach(link => {
+    const cls = link.classes;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${cls.dancestyle}</td>
+      <td>${cls.level}</td>
+      <td>${cls.day}</td>
+      <td>${cls.start_time?.slice(0,5) || ''}</td>
+      <td>${cls.end_time?.slice(0,5) || ''}</td>
+      <td><button data-link-id="${link.id}">Remove</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Attach remove button listeners
+  tbody.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const linkId = btn.getAttribute('data-link-id');
+      const { error } = await supabase
+        .from('student_classes')
+        .delete()
+        .eq('id', linkId);
+      if (error) {
+        alert("Failed to remove class: " + error.message);
+        return;
+      }
+      loadLinkedClasses();
+    });
+  });
+}
 
   async function loadAvailableClasses() {
     const { data, error } = await supabase
@@ -209,3 +209,4 @@
 </script>
 </body>
 </html>
+
